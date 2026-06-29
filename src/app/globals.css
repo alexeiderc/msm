@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --background: #f4f8fc;
+  --foreground: #14171a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #f8fbff 0%, #eef6fd 44%, #f7f9fb 100%);
+  color: var(--foreground);
+  font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+::selection {
+  background: #197bd2;
+  color: #ffffff;
+}
+
+.msm-hero-surface {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(53, 168, 255, 0.12), transparent 34%),
+    linear-gradient(90deg, rgba(3, 12, 28, 0.64) 0%, rgba(3, 12, 28, 0.34) 46%, rgba(3, 12, 28, 0.68) 100%),
+    linear-gradient(180deg, rgba(7, 17, 30, 0.18), rgba(7, 17, 30, 0.74)),
+    url("/brand/msm-global-watermark.jpg");
+  background-position: center;
+  background-size: cover;
+}
+
+.msm-slogan {
+  text-shadow: 0 2px 22px rgba(53, 168, 255, 0.45);
+}
+
+.msm-luminous-panel {
+  border: 1px solid rgba(234, 246, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 80px rgba(25, 123, 210, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.msm-scanlines {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+html[data-lite="true"] body {
+  background: #f7f9fb;
+}
+
+html[data-lite="true"] .msm-hero-surface {
+  background:
+    linear-gradient(180deg, rgba(7, 17, 30, 0.96), rgba(12, 63, 106, 0.92));
+}
+
+html[data-lite="true"] .msm-scanlines,
+html[data-lite="true"] .msm-luminous-panel::before {
+  display: none;
+}
+
+html[data-lite="true"] .eliana-intro-popover {
+  display: none;
+}
+
+html[data-lite="true"] .msm-luminous-panel {
+  border-color: rgba(234, 246, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+html[data-lite="true"] *,
+html[data-lite="true"] *::before,
+html[data-lite="true"] *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 0ms !important;
+  animation-duration: 0ms !important;
+  animation-iteration-count: 1 !important;
+}
+
+html[data-lite="true"] .shadow-soft,
+html[data-lite="true"] .shadow-glow,
+html[data-lite="true"] .shadow-lift {
+  box-shadow: none !important;
+}
+
+@media (prefers-reduced-data: reduce) {
+  .msm-hero-surface {
+    background:
+      linear-gradient(180deg, rgba(7, 17, 30, 0.96), rgba(12, 63, 106, 0.92));
+  }
+
+  .msm-scanlines {
+    display: none;
+  }
+}
+
+@keyframes eliana-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}

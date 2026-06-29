@@ -1,0 +1,1140 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  cliente
+  vendedor_vip
+  administrador
+  administrador_economico
+  superadmin
+}
+
+enum OrderStatus {
+  pendiente_pago
+  pago_confirmado
+  asignada_vip
+  confirmada_vip
+  preparando
+  en_ruta
+  entregada
+  cerrada
+  incidencia
+  cancelada
+}
+
+enum SellerLevel {
+  vendedor_nuevo
+  vendedor_verificado
+  vendedor_destacado
+  vendedor_vip
+  super_vip
+  tienda_oficial
+}
+
+enum KycStatus {
+  pendiente
+  aprobado
+  rechazado
+  requiere_revision
+}
+
+enum LedgerType {
+  venta
+  comision_msm
+  comision_pasarela
+  ajuste
+  payout
+}
+
+enum PaymentMethodStatus {
+  activo
+  pausado
+  oculto
+}
+
+enum PaymentAccountStatus {
+  activa
+  pausada
+  bloqueada
+}
+
+enum PaymentProofStatus {
+  recibido
+  aprobado
+  rechazado
+  nueva_evidencia
+}
+
+enum SellerApplicationStatus {
+  enviada
+  en_revision
+  aprobada
+  rechazada
+  mas_informacion
+  suspendida
+}
+
+enum SupportTicketStatus {
+  abierto
+  esperando_cliente
+  esperando_vip
+  en_revision
+  resuelto
+  cerrado
+}
+
+enum SupportReason {
+  demora
+  producto_incorrecto
+  producto_danado
+  falta_de_entrega
+  garantia
+  otro
+}
+
+enum SupportResolution {
+  reparacion
+  reemplazo
+  credito_interno
+  acuerdo_entre_partes
+  cierre_documentado
+}
+
+enum NotificationChannel {
+  email
+  whatsapp
+}
+
+enum BetaAccessStatus {
+  pendiente
+  aprobado
+  rechazado
+}
+
+enum FraudSeverity {
+  baja
+  media
+  alta
+  critica
+}
+
+enum ProductSla {
+  h24
+  h48
+  h72
+  bajo_gestion
+}
+
+enum StoreType {
+  vendedor_independiente
+  tienda_oficial
+}
+
+enum StoreStatus {
+  activo
+  pausado
+  suspendido
+}
+
+enum ProductStatus {
+  borrador
+  activo
+  pausado
+  agotado
+}
+
+enum RemittanceStatus {
+  pendiente_pago
+  pago_recibido
+  en_revision
+  lista_para_entrega
+  entregada
+  cerrada
+  incidencia
+  cancelada
+}
+
+enum AtmStatus {
+  activo
+  mantenimiento
+  fuera_servicio
+}
+
+enum AtmReservationStatus {
+  pendiente_pago
+  pago_confirmado
+  reservado
+  listo_para_retirar
+  entregado
+  expirado
+  cancelado
+}
+
+enum AtmOperationType {
+  reserva_efectivo
+  remesa
+  cambio_divisa
+  pago_qr
+  recarga_billetera
+  retiro_billetera
+}
+
+enum WalletTransactionStatus {
+  pendiente
+  confirmado
+  fallido
+  cancelado
+}
+
+enum WalletTransactionType {
+  credito
+  debito
+  reserva
+  reverso
+  ajuste
+}
+
+model Profile {
+  id                  String    @id @db.Uuid
+  email               String    @unique
+  fullName            String
+  phone               String?
+  role                UserRole  @default(cliente)
+  country             String?
+  address             String?
+  paymentMethodValid  Boolean   @default(false)
+  customerKycStatus   KycStatus @default(pendiente) @map("customer_kyc_status")
+  customerRiskLevel   String    @default("normal") @map("customer_risk_level")
+  customerRiskScore   Int       @default(0) @map("customer_risk_score")
+  customerRiskReasons String[]  @default([]) @map("customer_risk_reasons")
+  customerLastRiskReviewAt DateTime? @map("customer_last_risk_review_at")
+  identityDocumentType String?  @map("identity_document_type")
+  identityDocumentLast4 String? @map("identity_document_last4")
+  paymentAppName      String?   @map("payment_app_name")
+  paymentAccountOwner String?   @map("payment_account_owner")
+  kycProvider         String?   @map("kyc_provider")
+  kycProviderReference String?  @map("kyc_provider_reference")
+  kycCheckedAt        DateTime? @map("kyc_checked_at")
+  chargebackPolicyAcceptedAt DateTime? @map("chargeback_policy_accepted_at")
+  accountHoldReason   String?   @map("account_hold_reason")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  seller              Seller?
+  customerOrders      Order[]   @relation("CustomerOrders")
+  auditLogs           AuditLog[]
+  responsibleMethods  PaymentMethod[] @relation("PaymentMethodResponsible")
+  paymentProofs       PaymentProof[]
+  paymentReviews      PaymentReview[] @relation("PaymentReviewReviewer")
+  sellerApplications  SellerApplication[]
+  sellerAgreements    SellerAgreement[]
+  supportTickets      SupportTicket[] @relation("SupportTicketOpenedBy")
+  supportAssignments  SupportTicket[] @relation("SupportTicketAssignee")
+  supportMessages     SupportMessage[]
+  betaAccess          BetaAccess?
+  fraudAlerts         FraudAlert[]
+  executiveReports    ExecutiveReport[]
+  remittances         Remittance[] @relation("CustomerRemittances")
+  remittanceProofs    RemittancePaymentProof[]
+  remittanceReviews   RemittancePaymentReview[] @relation("RemittanceReviewReviewer")
+  customerKycReviews  CustomerKycReview[] @relation("CustomerKycReviewProfile")
+  customerKycDecisions CustomerKycReview[] @relation("CustomerKycReviewReviewer")
+  walletAccounts      WalletAccount[]
+  walletTransactions  WalletTransaction[]
+  atmReservations     AtmReservation[]
+  atmOperations       AtmOperation[]
+  settingsUpdated     Setting[]
+
+  @@map("profiles")
+}
+
+model CustomerKycReview {
+  id                String    @id @default(uuid()) @db.Uuid
+  profileId         String    @map("profile_id") @db.Uuid
+  reviewerId        String?   @map("reviewer_id") @db.Uuid
+  profile           Profile   @relation("CustomerKycReviewProfile", fields: [profileId], references: [id])
+  reviewer          Profile?  @relation("CustomerKycReviewReviewer", fields: [reviewerId], references: [id])
+  status            KycStatus @default(pendiente)
+  riskLevel         String    @default("normal") @map("risk_level")
+  provider          String?
+  providerReference String?   @map("provider_reference")
+  decisionNote      String?   @map("decision_note")
+  metadata          Json      @default("{}")
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("customer_kyc_reviews")
+}
+
+model Seller {
+  id              String       @id @default(uuid()) @db.Uuid
+  profileId       String       @unique @db.Uuid
+  profile         Profile      @relation(fields: [profileId], references: [id])
+  level           SellerLevel  @default(vendedor_nuevo)
+  status          KycStatus    @default(pendiente)
+  commissionRate  Decimal      @default(10.00) @db.Decimal(5, 2)
+  dailyCapacity   Int          @default(10)
+  maxConfirmMinutes Int        @default(120)
+  operationZone   String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  kyc             SellerKyc?
+  stores          Store[]
+  orders          Order[]
+  ledgerEntries   LedgerEntry[]
+  payouts         Payout[]
+  reviews         Review[]
+  agreements      SellerAgreement[]
+  applications    SellerApplication[]
+  atmOperations   AtmOperation[]
+
+  @@map("sellers")
+}
+
+model SellerKyc {
+  id                       String    @id @default(uuid()) @db.Uuid
+  sellerId                 String    @unique @db.Uuid
+  seller                   Seller    @relation(fields: [sellerId], references: [id])
+  fullName                 String
+  phone                    String
+  document                 String
+  location                 String
+  operationZone            String
+  videoUrl                 String?
+  communityVerificationVip String?
+  status                   KycStatus @default(pendiente)
+  reviewedAt               DateTime?
+  createdAt                DateTime  @default(now())
+
+  @@map("seller_kyc")
+}
+
+model Store {
+  id             String      @id @default(uuid()) @db.Uuid
+  sellerId       String      @db.Uuid
+  seller         Seller      @relation(fields: [sellerId], references: [id])
+  name           String
+  slug           String      @unique
+  type           StoreType   @default(vendedor_independiente)
+  status         StoreStatus @default(pausado)
+  ownerName      String?
+  companyName    String?
+  phone          String?
+  whatsapp       String?
+  email          String?
+  country        String      @default("Cuba")
+  province       String?
+  municipality   String?
+  address        String?
+  description    String?
+  warranty       String?
+  categories     String[]    @default([])
+  servicesActive String[]    @default([])
+  pickupAvailable Boolean   @default(false)
+  deliveryAvailable Boolean @default(true)
+  transferAvailable Boolean @default(false)
+  remittancesActive Boolean @default(false)
+  remittanceDeliveryMethods String[] @default([])
+  remittanceMunicipalities String[] @default([])
+  cashAvailable Decimal?    @db.Decimal(12, 2)
+  remittanceDailyLimit Decimal? @db.Decimal(12, 2)
+  remittanceEta String?
+  remittanceEvidenceMode String?
+  reputationLabel String?
+  isFeatured     Boolean    @default(false)
+  isActive       Boolean     @default(false)
+  deliveryZones  String[]
+  weeklyHours    Json?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  products       Product[]
+  orders         Order[]
+  atmReservations AtmReservation[]
+
+  @@map("stores")
+}
+
+model Category {
+  id             String      @id @default(uuid()) @db.Uuid
+  name           String      @unique
+  slug           String      @unique
+  baseCommission Decimal     @db.Decimal(5, 2)
+  products       Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id          String         @id @default(uuid()) @db.Uuid
+  storeId     String         @db.Uuid
+  store       Store          @relation(fields: [storeId], references: [id])
+  categoryId  String         @db.Uuid
+  category    Category       @relation(fields: [categoryId], references: [id])
+  name        String
+  slug        String
+  description String?
+  price       Decimal        @db.Decimal(12, 2)
+  currency    String         @default("USD")
+  subcategory String?
+  country     String         @default("Cuba")
+  province    String?
+  municipality String?
+  deliveryZone String?
+  warranty    String?
+  availability String?
+  status      ProductStatus  @default(borrador)
+  featured    Boolean        @default(false)
+  internalNotes String?
+  stock       Int            @default(0)
+  promisedSla ProductSla     @default(h48)
+  isActive    Boolean        @default(false)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  images      ProductImage[]
+  orderItems  OrderItem[]
+
+  @@unique([storeId, slug])
+  @@map("products")
+}
+
+model ProductImage {
+  id        String  @id @default(uuid()) @db.Uuid
+  productId String  @db.Uuid
+  product   Product @relation(fields: [productId], references: [id])
+  url       String
+  alt       String?
+  position  Int     @default(0)
+
+  @@map("product_images")
+}
+
+model Province {
+  id             String         @id @default(uuid()) @db.Uuid
+  name           String         @unique
+  municipalities Municipality[]
+  orders         Order[]
+
+  @@map("provinces")
+}
+
+model Municipality {
+  id         String   @id @default(uuid()) @db.Uuid
+  provinceId String   @db.Uuid
+  province   Province @relation(fields: [provinceId], references: [id])
+  name       String
+  orders     Order[]
+
+  @@unique([provinceId, name])
+  @@map("municipalities")
+}
+
+model Order {
+  id                   String             @id @default(uuid()) @db.Uuid
+  orderNumber          String             @unique
+  customerId           String             @db.Uuid
+  customer             Profile            @relation("CustomerOrders", fields: [customerId], references: [id])
+  sellerId             String?            @db.Uuid
+  seller               Seller?            @relation(fields: [sellerId], references: [id])
+  storeId              String?            @db.Uuid
+  store                Store?             @relation(fields: [storeId], references: [id])
+  status               OrderStatus        @default(pendiente_pago)
+  receiverFullName     String
+  receiverPhone        String
+  provinceId           String             @db.Uuid
+  province             Province           @relation(fields: [provinceId], references: [id])
+  municipalityId       String             @db.Uuid
+  municipality         Municipality       @relation(fields: [municipalityId], references: [id])
+  address              String
+  references           String
+  deliveryWindow       String
+  note                 String?
+  subtotal             Decimal            @db.Decimal(12, 2)
+  msmCommission        Decimal            @db.Decimal(12, 2)
+  gatewayCommission    Decimal            @db.Decimal(12, 2)
+  sellerNet            Decimal            @db.Decimal(12, 2)
+  paymentCountry       String?
+  paymentCurrency      String?
+  paymentMethodId      String?            @db.Uuid
+  paymentMethod        PaymentMethod?     @relation(fields: [paymentMethodId], references: [id])
+  paymentAccountId     String?            @db.Uuid
+  paymentAccount       PaymentAccount?    @relation(fields: [paymentAccountId], references: [id])
+  customerRiskScore     Int                @default(0) @map("customer_risk_score")
+  customerRiskLevel     String             @default("normal") @map("customer_risk_level")
+  customerRiskReasons   String[]           @default([]) @map("customer_risk_reasons")
+  vipDeliveryUnlockedAt DateTime?          @map("vip_delivery_unlocked_at")
+  deliveryOtpCodeHash   String?            @map("delivery_otp_code_hash")
+  deliveryOtpRequired   Boolean            @default(true) @map("delivery_otp_required")
+  deliveryOtpVerifiedAt DateTime?          @map("delivery_otp_verified_at")
+  deliveryEvidenceRequired Boolean         @default(true) @map("delivery_evidence_required")
+  vipConfirmBy         DateTime?
+  legalAcceptedAt      DateTime
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  items                OrderItem[]
+  events               OrderEvent[]
+  evidences            DeliveryEvidence[]
+  payments             Payment[]
+  disputes             Dispute[]
+  termsAcceptances     TermsAcceptance[]
+  paymentProofs        PaymentProof[]
+  supportTickets       SupportTicket[]
+  fraudAlerts          FraudAlert[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid()) @db.Uuid
+  orderId   String  @db.Uuid
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String  @db.Uuid
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  quantity  Int
+  unitPrice Decimal @db.Decimal(12, 2)
+  total     Decimal @db.Decimal(12, 2)
+
+  @@map("order_items")
+}
+
+model OrderEvent {
+  id        String      @id @default(uuid()) @db.Uuid
+  orderId   String      @db.Uuid
+  order     Order       @relation(fields: [orderId], references: [id])
+  status    OrderStatus
+  actorId   String?     @db.Uuid
+  note      String?
+  metadata  Json?
+  createdAt DateTime    @default(now())
+
+  @@map("order_events")
+}
+
+model DeliveryEvidence {
+  id           String   @id @default(uuid()) @db.Uuid
+  orderId      String   @db.Uuid
+  order        Order    @relation(fields: [orderId], references: [id])
+  photoUrl     String?
+  signatureUrl String?
+  message      String?
+  otpCodeHash  String?
+  receiverName String?  @map("receiver_name")
+  receiverDocumentLast4 String? @map("receiver_document_last4")
+  otpVerified  Boolean  @default(false) @map("otp_verified")
+  evidenceQualityScore Int @default(0) @map("evidence_quality_score")
+  createdAt    DateTime @default(now())
+
+  @@map("delivery_evidence")
+}
+
+model Payment {
+  id               String   @id @default(uuid()) @db.Uuid
+  orderId          String   @db.Uuid
+  order            Order    @relation(fields: [orderId], references: [id])
+  provider         String
+  providerRef      String?
+  amount           Decimal  @db.Decimal(12, 2)
+  status           String
+  receiptInternal  String?
+  createdAt        DateTime @default(now())
+
+  @@map("payments")
+}
+
+model LedgerEntry {
+  id          String     @id @default(uuid()) @db.Uuid
+  sellerId    String     @db.Uuid
+  seller      Seller     @relation(fields: [sellerId], references: [id])
+  type        LedgerType
+  amount      Decimal    @db.Decimal(12, 2)
+  description String
+  orderId     String?    @db.Uuid
+  payoutId    String?    @db.Uuid
+  createdAt   DateTime   @default(now())
+  atmOperations AtmOperation[]
+
+  @@map("ledger_entries")
+}
+
+model Payout {
+  id            String   @id @default(uuid()) @db.Uuid
+  sellerId      String   @db.Uuid
+  seller        Seller   @relation(fields: [sellerId], references: [id])
+  amount        Decimal  @db.Decimal(12, 2)
+  method        String
+  reference     String?
+  receiptUrl    String?
+  periodStart   DateTime
+  periodEnd     DateTime
+  createdAt     DateTime @default(now())
+
+  @@map("payouts")
+}
+
+model Commission {
+  id          String   @id @default(uuid()) @db.Uuid
+  categoryId  String?  @db.Uuid
+  rate        Decimal  @db.Decimal(5, 2)
+  description String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@map("commissions")
+}
+
+model Review {
+  id          String   @id @default(uuid()) @db.Uuid
+  sellerId    String   @db.Uuid
+  seller      Seller   @relation(fields: [sellerId], references: [id])
+  orderId     String?  @db.Uuid
+  compliance  Int
+  quality     Int
+  attention   Int
+  comment     String?
+  createdAt   DateTime @default(now())
+
+  @@map("reviews")
+}
+
+model Dispute {
+  id          String   @id @default(uuid()) @db.Uuid
+  orderId     String   @db.Uuid
+  order       Order    @relation(fields: [orderId], references: [id])
+  openedById  String?  @db.Uuid
+  status      String
+  reason      String
+  resolution  String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("disputes")
+}
+
+model Notification {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  channel   String
+  title     String
+  body      String
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("notifications")
+}
+
+model AuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  actorId   String?  @db.Uuid
+  actor     Profile? @relation(fields: [actorId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@map("audit_logs")
+}
+
+model TermsAcceptance {
+  id        String   @id @default(uuid()) @db.Uuid
+  orderId   String?  @db.Uuid
+  order     Order?   @relation(fields: [orderId], references: [id])
+  userId    String?  @db.Uuid
+  version   String
+  ip        String?
+  acceptedAt DateTime @default(now())
+
+  @@map("terms_acceptances")
+}
+
+model PaymentMethod {
+  id                    String              @id @default(uuid()) @db.Uuid
+  country               String
+  currency              String
+  type                  String
+  status                PaymentMethodStatus @default(activo)
+  minAmount             Decimal             @db.Decimal(12, 2)
+  maxAmount             Decimal             @db.Decimal(12, 2)
+  feePercent            Decimal             @default(0) @db.Decimal(5, 2)
+  visibleInstructions   String
+  internalInstructions  String?
+  priority              Int                 @default(100)
+  dailyCapacity         Decimal             @db.Decimal(12, 2)
+  responsibleEconomicId String?             @db.Uuid
+  responsibleEconomic   Profile?            @relation("PaymentMethodResponsible", fields: [responsibleEconomicId], references: [id])
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  accounts              PaymentAccount[]
+  orders                Order[]
+  proofs                PaymentProof[]
+  remittances           Remittance[]
+  remittanceProofs      RemittancePaymentProof[]
+
+  @@index([country, currency, type, status, priority])
+  @@map("payment_methods")
+}
+
+model PaymentAccount {
+  id            String               @id @default(uuid()) @db.Uuid
+  methodId      String               @db.Uuid
+  method        PaymentMethod        @relation(fields: [methodId], references: [id])
+  visibleName   String
+  internalAlias String
+  dailyLimit    Decimal              @db.Decimal(12, 2)
+  receivedToday Decimal              @default(0) @db.Decimal(12, 2)
+  status        PaymentAccountStatus @default(activa)
+  expiresAt     DateTime?
+  internalNote  String?
+  usageRules    Json?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  orders        Order[]
+  proofs        PaymentProof[]
+  remittances   Remittance[]
+  remittanceProofs RemittancePaymentProof[]
+
+  @@index([methodId, status])
+  @@map("payment_accounts")
+}
+
+model PaymentProof {
+  id               String             @id @default(uuid()) @db.Uuid
+  orderId          String             @db.Uuid
+  order            Order              @relation(fields: [orderId], references: [id])
+  customerId       String             @db.Uuid
+  customer         Profile            @relation(fields: [customerId], references: [id])
+  paymentMethodId  String             @db.Uuid
+  paymentMethod    PaymentMethod      @relation(fields: [paymentMethodId], references: [id])
+  paymentAccountId String?            @db.Uuid
+  paymentAccount   PaymentAccount?    @relation(fields: [paymentAccountId], references: [id])
+  imageUrl         String
+  reference        String
+  amount           Decimal            @db.Decimal(12, 2)
+  currency         String
+  country          String
+  senderName       String
+  paidAt           DateTime
+  fingerprint      String?
+  status           PaymentProofStatus @default(recibido)
+  createdAt        DateTime           @default(now())
+  reviews          PaymentReview[]
+
+  @@index([orderId, status])
+  @@index([reference, amount, currency])
+  @@map("payment_proofs")
+}
+
+model PaymentReview {
+  id         String             @id @default(uuid()) @db.Uuid
+  proofId    String             @db.Uuid
+  proof      PaymentProof       @relation(fields: [proofId], references: [id])
+  reviewerId String             @db.Uuid
+  reviewer   Profile            @relation("PaymentReviewReviewer", fields: [reviewerId], references: [id])
+  decision   PaymentProofStatus
+  note       String?
+  createdAt  DateTime           @default(now())
+
+  @@map("payment_reviews")
+}
+
+model SellerApplication {
+  id                   String                  @id @default(uuid()) @db.Uuid
+  profileId            String?                 @db.Uuid
+  profile              Profile?                @relation(fields: [profileId], references: [id])
+  sellerId             String?                 @db.Uuid
+  seller               Seller?                 @relation(fields: [sellerId], references: [id])
+  fullName             String
+  phone                String
+  country              String                  @default("Cuba")
+  province             String
+  municipality         String
+  originCommunity      String
+  contactHandle        String
+  categories           String[]
+  videoUrl             String?
+  productPhotoUrls     String[]
+  deliveryZone         String
+  weeklyHours          String
+  dailyCapacity        Int
+  offeredWarranty      String
+  agreementAccepted    Boolean                 @default(false)
+  status               SellerApplicationStatus @default(enviada)
+  adminNote            String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  @@map("seller_applications")
+}
+
+model SellerAgreement {
+  id            String   @id @default(uuid()) @db.Uuid
+  sellerId      String?  @db.Uuid
+  seller        Seller?  @relation(fields: [sellerId], references: [id])
+  userId        String   @db.Uuid
+  user          Profile  @relation(fields: [userId], references: [id])
+  version       String
+  ip            String?
+  acceptedAt    DateTime @default(now())
+  agreementText String
+
+  @@map("seller_agreements")
+}
+
+model SupportTicket {
+  id           String              @id @default(uuid()) @db.Uuid
+  orderId      String              @db.Uuid
+  order        Order               @relation(fields: [orderId], references: [id])
+  openedById   String              @db.Uuid
+  openedBy     Profile             @relation("SupportTicketOpenedBy", fields: [openedById], references: [id])
+  assignedToId String?             @db.Uuid
+  assignedTo   Profile?            @relation("SupportTicketAssignee", fields: [assignedToId], references: [id])
+  reason       SupportReason
+  status       SupportTicketStatus @default(abierto)
+  subject      String
+  resolution   SupportResolution?
+  resolvedAt   DateTime?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  messages     SupportMessage[]
+
+  @@index([orderId, status])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id           String        @id @default(uuid()) @db.Uuid
+  ticketId     String        @db.Uuid
+  ticket       SupportTicket @relation(fields: [ticketId], references: [id])
+  authorId     String        @db.Uuid
+  author       Profile       @relation(fields: [authorId], references: [id])
+  body         String
+  evidenceUrl  String?
+  internalOnly Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  @@map("support_messages")
+}
+
+model NotificationTemplate {
+  id        String              @id @default(uuid()) @db.Uuid
+  key       String
+  channel   NotificationChannel
+  subject   String?
+  body      String
+  variables String[]
+  active    Boolean             @default(true)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  @@unique([key, channel])
+  @@map("notification_templates")
+}
+
+model BetaAccess {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @unique @db.Uuid
+  user      Profile          @relation(fields: [userId], references: [id])
+  status    BetaAccessStatus @default(pendiente)
+  note      String?
+  invitedBy String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@map("beta_access")
+}
+
+model FraudAlert {
+  id        String        @id @default(uuid()) @db.Uuid
+  orderId   String?       @db.Uuid
+  order     Order?        @relation(fields: [orderId], references: [id])
+  userId    String?       @db.Uuid
+  user      Profile?      @relation(fields: [userId], references: [id])
+  type      String
+  severity  FraudSeverity @default(media)
+  message   String
+  metadata  Json?
+  resolved  Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([type, resolved])
+  @@map("fraud_alerts")
+}
+
+model ExecutiveReport {
+  id          String   @id @default(uuid()) @db.Uuid
+  title       String
+  periodStart DateTime
+  periodEnd   DateTime
+  metrics     Json
+  createdById String?  @db.Uuid
+  createdBy   Profile? @relation(fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+
+  @@map("executive_reports")
+}
+
+model Remittance {
+  id                       String           @id @default(uuid()) @db.Uuid
+  remittanceNumber         String           @unique
+  customerId               String           @db.Uuid
+  customer                 Profile          @relation("CustomerRemittances", fields: [customerId], references: [id])
+  status                   RemittanceStatus @default(pendiente_pago)
+  senderFullName           String
+  senderPhone              String
+  senderCountry            String
+  senderCurrency           String
+  sendAmount               Decimal          @db.Decimal(12, 2)
+  msmFee                   Decimal          @db.Decimal(12, 2)
+  netAmount                Decimal          @db.Decimal(12, 2)
+  recipientFullName        String
+  recipientPhone           String
+  recipientProvince        String
+  recipientMunicipality    String
+  recipientAddress         String
+  payoutCurrency           String
+  payoutMethod             String
+  estimatedRecipientAmount Decimal?         @db.Decimal(12, 2)
+  assignedSellerId         String?          @db.Uuid
+  vipStoreId               String?          @db.Uuid
+  paymentMethodId          String           @db.Uuid
+  paymentMethod            PaymentMethod    @relation(fields: [paymentMethodId], references: [id])
+  paymentAccountId         String?          @db.Uuid
+  paymentAccount           PaymentAccount?  @relation(fields: [paymentAccountId], references: [id])
+  note                     String?
+  legalAcceptedAt          DateTime
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+  events                   RemittanceEvent[]
+  paymentProofs            RemittancePaymentProof[]
+
+  @@index([customerId, status])
+  @@index([paymentMethodId, status])
+  @@map("remittances")
+}
+
+model RemittanceEvent {
+  id           String           @id @default(uuid()) @db.Uuid
+  remittanceId String           @db.Uuid
+  remittance   Remittance       @relation(fields: [remittanceId], references: [id])
+  status       RemittanceStatus
+  actorId      String?          @db.Uuid
+  note         String?
+  metadata     Json?
+  createdAt    DateTime         @default(now())
+
+  @@map("remittance_events")
+}
+
+model RemittancePaymentProof {
+  id               String             @id @default(uuid()) @db.Uuid
+  remittanceId     String             @db.Uuid
+  remittance       Remittance         @relation(fields: [remittanceId], references: [id])
+  customerId       String             @db.Uuid
+  customer         Profile            @relation(fields: [customerId], references: [id])
+  paymentMethodId  String             @db.Uuid
+  paymentMethod    PaymentMethod      @relation(fields: [paymentMethodId], references: [id])
+  paymentAccountId String?            @db.Uuid
+  paymentAccount   PaymentAccount?    @relation(fields: [paymentAccountId], references: [id])
+  imageUrl         String
+  reference        String
+  amount           Decimal            @db.Decimal(12, 2)
+  currency         String
+  country          String
+  senderName       String
+  paidAt           DateTime
+  fingerprint      String?
+  status           PaymentProofStatus @default(recibido)
+  createdAt        DateTime           @default(now())
+  reviews          RemittancePaymentReview[]
+
+  @@index([remittanceId, status])
+  @@index([reference, amount, currency])
+  @@map("remittance_payment_proofs")
+}
+
+model RemittancePaymentReview {
+  id         String                 @id @default(uuid()) @db.Uuid
+  proofId    String                 @db.Uuid
+  proof      RemittancePaymentProof @relation(fields: [proofId], references: [id])
+  reviewerId String                 @db.Uuid
+  reviewer   Profile                @relation("RemittanceReviewReviewer", fields: [reviewerId], references: [id])
+  decision   PaymentProofStatus
+  note       String?
+  createdAt  DateTime               @default(now())
+
+  @@map("remittance_payment_reviews")
+}
+
+model WalletAccount {
+  id              String              @id @default(uuid()) @db.Uuid
+  userId          String              @map("user_id") @db.Uuid
+  user            Profile             @relation(fields: [userId], references: [id])
+  currency        String
+  balance         Decimal             @default(0) @db.Decimal(14, 2)
+  reservedBalance Decimal             @default(0) @map("reserved_balance") @db.Decimal(14, 2)
+  status          String              @default("activa")
+  riskHold        Boolean             @default(false) @map("risk_hold")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+  transactions    WalletTransaction[]
+
+  @@unique([userId, currency])
+  @@map("wallet_accounts")
+}
+
+model WalletTransaction {
+  id            String                  @id @default(uuid()) @db.Uuid
+  walletId      String                  @map("wallet_id") @db.Uuid
+  wallet        WalletAccount           @relation(fields: [walletId], references: [id])
+  userId        String                  @map("user_id") @db.Uuid
+  user          Profile                 @relation(fields: [userId], references: [id])
+  type          WalletTransactionType
+  status        WalletTransactionStatus @default(pendiente)
+  amount        Decimal                 @db.Decimal(14, 2)
+  currency      String
+  referenceType String?                 @map("reference_type")
+  referenceId   String?                 @map("reference_id") @db.Uuid
+  note          String?
+  metadata      Json?
+  createdAt     DateTime                @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("wallet_transactions")
+}
+
+model AtmLocation {
+  id           String       @id @default(uuid()) @db.Uuid
+  name         String
+  country      String       @default("Cuba")
+  province     String
+  municipality String
+  zone         String?
+  latitude     Decimal?     @db.Decimal(10, 7)
+  longitude    Decimal?     @db.Decimal(10, 7)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  machines     AtmMachine[]
+
+  @@index([country, province, municipality])
+  @@map("atm_locations")
+}
+
+model AtmMachine {
+  id           String             @id @default(uuid()) @db.Uuid
+  code         String             @unique
+  name         String
+  locationId   String?            @map("location_id") @db.Uuid
+  location     AtmLocation?       @relation(fields: [locationId], references: [id])
+  status       AtmStatus          @default(activo)
+  dailyLimit   Decimal            @default(0) @map("daily_limit") @db.Decimal(14, 2)
+  technicianName String?          @map("technician_name")
+  lastSyncAt   DateTime?          @map("last_sync_at")
+  metadata     Json?
+  createdAt    DateTime           @default(now()) @map("created_at")
+  updatedAt    DateTime           @updatedAt @map("updated_at")
+  inventory    AtmCashInventory[]
+  reservations AtmReservation[]
+  operations   AtmOperation[]
+
+  @@index([status])
+  @@map("atm_machines")
+}
+
+model AtmCashInventory {
+  id              String     @id @default(uuid()) @db.Uuid
+  atmId           String     @map("atm_id") @db.Uuid
+  atm             AtmMachine @relation(fields: [atmId], references: [id])
+  currency        String
+  availableAmount Decimal    @default(0) @map("available_amount") @db.Decimal(14, 2)
+  reservedAmount  Decimal    @default(0) @map("reserved_amount") @db.Decimal(14, 2)
+  minimumAmount   Decimal    @default(0) @map("minimum_amount") @db.Decimal(14, 2)
+  status          String     @default("disponible")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@unique([atmId, currency])
+  @@map("atm_cash_inventory")
+}
+
+model AtmReservation {
+  id                String               @id @default(uuid()) @db.Uuid
+  reservationNumber String               @unique @map("reservation_number")
+  customerId        String?              @map("customer_id") @db.Uuid
+  customer          Profile?             @relation(fields: [customerId], references: [id])
+  atmId             String?              @map("atm_id") @db.Uuid
+  atm               AtmMachine?          @relation(fields: [atmId], references: [id])
+  vipStoreId        String?              @map("vip_store_id") @db.Uuid
+  store             Store?               @relation(fields: [vipStoreId], references: [id])
+  country           String               @default("Cuba")
+  province          String
+  municipality      String
+  currency          String
+  amount            Decimal              @db.Decimal(14, 2)
+  paymentMethod     String?              @map("payment_method")
+  status            AtmReservationStatus @default(pendiente_pago)
+  qrCodeHash        String?              @map("qr_code_hash")
+  qrExpiresAt       DateTime?            @map("qr_expires_at")
+  readyAt           DateTime?            @map("ready_at")
+  deliveredAt       DateTime?            @map("delivered_at")
+  metadata          Json?
+  createdAt         DateTime             @default(now()) @map("created_at")
+  updatedAt         DateTime             @updatedAt @map("updated_at")
+  qrSessions        AtmQrSession[]
+  operations        AtmOperation[]
+
+  @@index([country, province, municipality, status])
+  @@map("atm_reservations")
+}
+
+model AtmQrSession {
+  id            String         @id @default(uuid()) @db.Uuid
+  reservationId String         @map("reservation_id") @db.Uuid
+  reservation   AtmReservation @relation(fields: [reservationId], references: [id])
+  qrCodeHash    String         @map("qr_code_hash")
+  expiresAt     DateTime       @map("expires_at")
+  usedAt        DateTime?      @map("used_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+
+  @@map("atm_qr_sessions")
+}
+
+model AtmOperation {
+  id              String          @id @default(uuid()) @db.Uuid
+  operationNumber String          @unique @map("operation_number")
+  type            AtmOperationType
+  atmId           String?         @map("atm_id") @db.Uuid
+  atm             AtmMachine?     @relation(fields: [atmId], references: [id])
+  reservationId   String?         @map("reservation_id") @db.Uuid
+  reservation     AtmReservation? @relation(fields: [reservationId], references: [id])
+  customerId      String?         @map("customer_id") @db.Uuid
+  customer        Profile?        @relation(fields: [customerId], references: [id])
+  sellerId        String?         @map("seller_id") @db.Uuid
+  seller          Seller?         @relation(fields: [sellerId], references: [id])
+  amount          Decimal         @db.Decimal(14, 2)
+  currency        String
+  status          String          @default("pendiente")
+  evidenceUrl     String?         @map("evidence_url")
+  ledgerEntryId   String?         @map("ledger_entry_id") @db.Uuid
+  ledgerEntry     LedgerEntry?    @relation(fields: [ledgerEntryId], references: [id])
+  metadata        Json?
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  @@index([type, status])
+  @@map("atm_operations")
+}
+
+model Setting {
+  key         String   @id
+  value       Json
+  description String?
+  updatedById String?  @map("updated_by") @db.Uuid
+  updatedBy   Profile? @relation(fields: [updatedById], references: [id])
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

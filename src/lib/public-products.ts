@@ -1,0 +1,115 @@
+import { officialPublicProductsFallback } from "@/lib/demo-msm-store";
+import type { PublicProduct } from "@/components/public/products-experience";
+
+export const fallbackPublicProducts: PublicProduct[] = [
+  ...officialPublicProductsFallback,
+  {
+    id: "combo-familiar-basico",
+    name: "Combo familiar basico",
+    slug: "combo-familiar-basico",
+    price: 58,
+    stock: 20,
+    category: "Alimentos",
+    store: "Bodega VIP Santiago",
+    country: "Cuba",
+    province: "Santiago de Cuba",
+    municipality: "Santiago de Cuba",
+    deliveryZone: "Santiago de Cuba",
+    warranty: "Garantia VIP",
+    promisedSla: "48h",
+    availability: "stock real",
+    image: "https://images.unsplash.com/photo-1542838132-92c53300491e"
+  },
+  {
+    id: "kit-panel-solar",
+    name: "Kit solar compacto",
+    slug: "kit-panel-solar",
+    price: 420,
+    stock: 4,
+    category: "Energia solar",
+    store: "Energia VIP Habana",
+    country: "Cuba",
+    province: "La Habana",
+    municipality: "Habana Vieja",
+    deliveryZone: "La Habana",
+    warranty: "Bajo gestion",
+    promisedSla: "bajo gestion",
+    availability: "por confirmar",
+    image: "https://images.unsplash.com/photo-1509391366360-2e959784a276"
+  },
+  {
+    id: "taladro-pro",
+    name: "Taladro profesional",
+    slug: "taladro-pro",
+    price: 95,
+    stock: 8,
+    category: "Ferreteria",
+    store: "FerreVIP Camaguey",
+    country: "Cuba",
+    province: "Camaguey",
+    municipality: "Camaguey",
+    deliveryZone: "Camaguey",
+    warranty: "7 dias",
+    promisedSla: "72h",
+    availability: "stock real",
+    image: "https://images.unsplash.com/photo-1504148455328-c376907d081c"
+  },
+  {
+    id: "vip-miami-iphone",
+    name: "iPhone revisado por VIP Miami",
+    slug: "iphone-revisado-vip-miami",
+    price: 380,
+    currency: "USD",
+    stock: 5,
+    category: "Electrodomesticos",
+    store: "MSM VIP Miami",
+    country: "Estados Unidos",
+    province: "Florida",
+    municipality: "Miami",
+    deliveryZone: "Miami-Dade y pickup coordinado",
+    warranty: "Garantia VIP local segun condicion del equipo.",
+    promisedSla: "24h",
+    availability: "stock real",
+    image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9"
+  },
+  {
+    id: "vip-houston-tool-kit",
+    name: "Kit herramientas para pickup Houston",
+    slug: "kit-herramientas-pickup-houston",
+    price: 120,
+    currency: "USD",
+    stock: 9,
+    category: "Ferreteria",
+    store: "Herramientas VIP Houston",
+    country: "Estados Unidos",
+    province: "Texas",
+    municipality: "Houston",
+    deliveryZone: "Houston, Katy y zonas cercanas",
+    warranty: "7 dias con evidencia y revision del VIP.",
+    promisedSla: "48h",
+    availability: "stock real",
+    image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc"
+  },
+  {
+    id: "vip-ny-service",
+    name: "Servicio VIP envio local New York",
+    slug: "servicio-vip-envio-local-new-york",
+    price: 35,
+    currency: "USD",
+    stock: 25,
+    category: "Servicios",
+    store: "Servicios VIP New York",
+    country: "Estados Unidos",
+    province: "New York",
+    municipality: "New York City",
+    deliveryZone: "Queens, Bronx, Brooklyn y Manhattan",
+    warranty: "Servicio documentado con confirmacion del cliente.",
+    promisedSla: "24h",
+    availability: "activo por zona",
+    image: "https://images.unsplash.com/photo-1494526585095-c41746248156"
+  }
+];
+
+export function findFallbackProduct(slug: string) {
+  return fallbackPublicProducts.find((product) => product.slug === slug);
+}

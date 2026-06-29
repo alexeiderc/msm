@@ -1,0 +1,77 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Next.js
+.next
+.next-msm
+out
+build
+dist
+
+# Production
+.vercel
+.turbo
+
+# Environment variables
+.env
+.env*.local
+.env.production
+
+# Debug logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+dev-server-*.log
+
+# Testing
+coverage
+.nyc_output
+
+# Prisma
+prisma/dev.db
+prisma/dev.db-journal
+prisma/migrations/**/migration.sql.tmp
+
+# Supabase
+.supabase
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDEs
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea
+*.swp
+*.swo
+*~
+
+# TypeScript
+*.tsbuildinfo
+
+# Cache
+.cache
+.parcel-cache
+.workers
+work/cache
+work/store
+
+# Temporary files
+tmp
+temp
+*.tmp
+.codex
+.agents
+work/
+work/store

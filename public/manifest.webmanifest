@@ -1,0 +1,45 @@
+{
+  "name": "MSM my store",
+  "short_name": "MSM",
+  "description": "Plataforma MSM MY STORE para productos, remesas, pagos, billetera, vendedores VIP y Cajeros MSM Digital.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07111E",
+  "theme_color": "#197BD2",
+  "icons": [
+    {
+      "src": "/icons/msm-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Productos",
+      "short_name": "Productos",
+      "url": "/products",
+      "description": "Buscar productos y servicios MSM."
+    },
+    {
+      "name": "Remesas",
+      "short_name": "Remesas",
+      "url": "/remittances",
+      "description": "Crear remesa MSM por zona."
+    },
+    {
+      "name": "Billetera",
+      "short_name": "Wallet",
+      "url": "/wallet",
+      "description": "Abrir billetera digital MSM."
+    },
+    {
+      "name": "Cajeros MSM",
+      "short_name": "Cajeros",
+      "url": "/atm",
+      "description": "Reservas y Cajeros MSM Digital."
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="MSM my store">
+  <rect width="512" height="512" rx="92" fill="#07111E"/>
+  <path d="M84 316L127 124h82l18 112 56-112h86l-43 192h-66l27-119-61 119h-50l-20-119-27 119H84Z" fill="#197BD2"/>
+  <text x="96" y="394" fill="#FFFFFF" font-family="Helvetica, Arial, sans-serif" font-size="52" font-weight="700">MSM</text>
+  <text x="218" y="394" fill="#35A8FF" font-family="Helvetica, Arial, sans-serif" font-size="38" font-weight="400">my store</text>
+</svg>
