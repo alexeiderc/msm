@@ -15,6 +15,7 @@ const navItems = [
 
 const helpLinks = [
   ["YO SOY ELIANA IA", "/eliana"],
+  ["Quienes somos", "/quienes-somos"],
   ["Centro de ayuda", "/help"],
   ["Crear cuenta", "/auth/signup"],
   ["Como funciona", "/how-it-works"],

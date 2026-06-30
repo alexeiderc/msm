@@ -62,6 +62,8 @@ Thumbs.db
 
 # Cache
 .cache
+.tool-home
+.pnpm-home
 .parcel-cache
 .workers
 work/cache

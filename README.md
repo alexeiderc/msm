@@ -74,6 +74,8 @@ Para el primer push a GitHub en la laptop, crea un repo privado y abre `github-f
 
 Despues conecta el repositorio en Vercel y configura las variables indicadas en `docs/vercel-deploy.md`.
 
+Para conectar Supabase real y ejecutar las fases 1 a 4 en la laptop, abre `run-supabase-phases-1-4.cmd`. La guia esta en `docs/supabase-live-sync.md`.
+
 Si el servidor local queda roto despues de una prueba o no abre `localhost:3000`, cierra la ventana del servidor con `Ctrl + C` y abre `reset-local.cmd`. Ese script limpia los archivos temporales de Next.js y arranca MSM MY STORE limpio. El comando `pnpm build` esta protegido: si detecta que `localhost:3000` esta encendido, se detiene para no romper el servidor local.
 
 Si prefieres npm:
@@ -132,6 +134,7 @@ Los productos publicos solo aparecen si tienen tienda activa, vendedor, provinci
 - `/wallet`: billetera digital MSM preparada para saldo, reservas y ledger.
 - `/atm`: Cajeros MSM Digital, reservas de efectivo y QR temporal.
 - `/eliana`: asistente inteligente MSM para clientes, vendedores VIP, economia y administracion.
+- `/quienes-somos`: vision publica de MSM MY STORE, que hacemos y ELIANA IA.
 - `/orders`: seguimiento de ordenes.
 - `/account/kyc`: validacion del cliente y metodo de pago.
 - `/auth/signup`: crear cuenta de cliente o iniciar camino para vendedor VIP.
@@ -185,6 +188,7 @@ Ver tambien:
 - `docs/design-system.md`
 - `docs/brand-guidelines.md`
 - `docs/vercel-deploy.md`
+- `docs/supabase-live-sync.md`
 - `docs/github-sync.md`
 - `docs/zones.md`
 - `docs/remittance-flow.md`

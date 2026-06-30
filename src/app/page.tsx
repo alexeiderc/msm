@@ -6,6 +6,7 @@ import {
   CircleDollarSign,
   Headphones,
   Home as HomeIcon,
+  Info,
   MapPin,
   PackageSearch,
   QrCode,
@@ -208,6 +209,11 @@ export default function Home() {
           <CircleDollarSign className="text-msm-blue" size={24} />
           <h3 className="mt-3 font-bold">Metodos activos</h3>
           <p className="mt-1 text-sm text-slate-600">Consulta pais, metodo y estado sin exponer cuentas.</p>
+        </Link>
+        <Link href="/quienes-somos" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
+          <Info className="text-msm-blue" size={24} />
+          <h3 className="mt-3 font-bold">Quienes somos</h3>
+          <p className="mt-1 text-sm text-slate-600">Conoce la vision MSM: comercio, tecnologia, remesas, IA y comunidad.</p>
         </Link>
         <Link href="/tiendas-vip" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
           <BadgeCheck className="text-msm-blue" size={24} />
