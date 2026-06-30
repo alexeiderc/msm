@@ -37,7 +37,7 @@ export default function ExchangePage() {
                   <CircleDollarSign size={21} />
                 </span>
                 <div>
-                  <h2 className="font-bold text-msm-ink">{pair.from} -> {pair.to}</h2>
+                  <h2 className="font-bold text-msm-ink">{pair.from} -&gt; {pair.to}</h2>
                   <p className="mt-1 text-sm text-slate-600">{pair.route}</p>
                 </div>
               </div>
