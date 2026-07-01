@@ -7,6 +7,7 @@ import { calculateCustomerRisk } from "@/lib/risk/customer-risk";
 import { makeOrderNumber } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { notifyOrderCreated, notifyOrderStatusChange } from "@/lib/notifications";
 import type { ActionResult } from "@/types/actions";
 
 export type ActionState = ActionResult;
@@ -40,7 +41,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
   const { data: customerProfile } = await admin
     .from("profiles")
-    .select("full_name,phone,country,address,payment_method_valid,customer_kyc_status,customer_risk_level,identity_document_type,identity_document_last4,payment_account_owner,chargeback_policy_accepted_at")
+    .select("full_name,email,phone,country,address,payment_method_valid,customer_kyc_status,customer_risk_level,identity_document_type,identity_document_last4,payment_account_owner,chargeback_policy_accepted_at")
     .eq("id", user.id)
     .maybeSingle();
 
@@ -389,6 +390,15 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
   revalidatePath("/orders");
   revalidatePath("/dashboard/economic");
   revalidatePath("/dashboard/vip");
+
+  notifyOrderCreated({
+    orderNumber,
+    customerEmail: customerProfile?.email,
+    customerPhone: customerProfile?.phone,
+    userId: user.id,
+    orderId: order.id
+  });
+
   return { ok: true, message: "Orden creada. Pendiente de confirmacion de pago.", orderNumber };
 }
 
@@ -505,6 +515,32 @@ export async function updateVipOrderStatusAction(_: ActionResult, formData: Form
       entity_id: parsed.data.orderId,
       after: { status: parsed.data.status, note: parsed.data.note }
     });
+
+    let orderForNotify: { order_number: string; customer_id: string; profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[] } | null = null;
+    try {
+      const result = await admin
+        .from("orders")
+        .select("order_number,customer_id,profiles!inner(email,phone)")
+        .eq("id", parsed.data.orderId)
+        .maybeSingle();
+      orderForNotify = result.data;
+    } catch {}
+    if (orderForNotify) {
+      const row = orderForNotify as unknown as {
+        order_number: string;
+        customer_id: string;
+        profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[];
+      };
+      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      notifyOrderStatusChange({
+        orderNumber: row.order_number,
+        status: parsed.data.status,
+        customerEmail: profile?.email,
+        customerPhone: profile?.phone,
+        userId: row.customer_id,
+        orderId: parsed.data.orderId
+      });
+    }
 
     revalidatePath("/dashboard/vip");
     revalidatePath("/orders");
@@ -632,10 +668,182 @@ export async function submitDeliveryEvidence(_: ActionResult, formData: FormData
       }
     });
 
-    revalidatePath("/dashboard/vip");
-    revalidatePath("/orders");
-    return { ok: true, message: "Evidencia guardada y orden marcada como entregada." };
+    let deliveredOrder: { order_number: string; customer_id: string; profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[] } | null = null;
+    try {
+      const result = await admin
+        .from("orders")
+        .select("order_number,customer_id,profiles!inner(email,phone)")
+        .eq("id", parsed.data.orderId)
+        .maybeSingle();
+      deliveredOrder = result.data;
+    } catch {}
+    if (deliveredOrder) {
+      const row = deliveredOrder as unknown as {
+        order_number: string;
+        customer_id: string;
+        profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[];
+      };
+      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      notifyOrderStatusChange({
+        orderNumber: row.order_number,
+        status: "entregada",
+        customerEmail: profile?.email,
+        customerPhone: profile?.phone,
+        userId: row.customer_id,
+        orderId: parsed.data.orderId
+      });
+    }
+
+  revalidatePath("/dashboard/vip");
+  revalidatePath("/orders");
+  return { ok: true, message: "Evidencia guardada y orden marcada como entregada." };
   } catch (error) {
     return { ok: false, message: error instanceof Error ? error.message : "No se pudo guardar la evidencia." };
   }
+}
+
+export async function createBatchCheckoutOrders(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const itemsJson = formData.get("cartItems");
+  let items: { productId: string; quantity: number }[] = [];
+  try {
+    items = JSON.parse(itemsJson as string);
+  } catch {
+    return { ok: false, message: "Items del carrito invalidos." };
+  }
+
+  if (!items.length) {
+    return { ok: false, message: "El carrito esta vacio." };
+  }
+
+  const supabase = await createClient();
+  const admin = createAdminClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { ok: false, message: "Inicia sesion para completar el checkout." };
+
+  const { data: customerProfile } = await admin
+    .from("profiles")
+    .select("full_name,email,phone,country,address,customer_kyc_status,customer_risk_level,identity_document_type,identity_document_last4,payment_account_owner,chargeback_policy_accepted_at")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const customerReady = Boolean(
+    customerProfile?.full_name && customerProfile?.phone && customerProfile?.country &&
+    customerProfile?.address && customerProfile?.identity_document_type &&
+    customerProfile?.identity_document_last4 && customerProfile?.payment_account_owner &&
+    customerProfile?.chargeback_policy_accepted_at
+  );
+  if (!customerReady) {
+    return { ok: false, message: "Antes de pagar debes completar KYC de cliente en /account/kyc." };
+  }
+
+  if (customerProfile?.customer_kyc_status === "rechazado" || customerProfile?.customer_risk_level === "bloqueado") {
+    return { ok: false, message: "Esta cuenta necesita revision de MSM antes de crear nuevas ordenes." };
+  }
+
+  const orderNumbers: string[] = [];
+  const errors: string[] = [];
+
+  for (const item of items) {
+    const { data: product } = await admin
+      .from("products")
+      .select("id,name,price,stock,store_id,category_id,status,is_active,stores(seller_id,status,is_active,province,municipality),categories(base_commission)")
+      .eq("id", item.productId)
+      .eq("is_active", true)
+      .eq("status", "activo")
+      .maybeSingle();
+
+    if (!product || Number(product.stock) < item.quantity) {
+      errors.push(`Producto ${item.productId}: sin stock disponible.`);
+      continue;
+    }
+
+    const row = product as unknown as {
+      stores?: { seller_id?: string; status?: string; is_active?: boolean; province?: string | null; municipality?: string | null };
+      categories?: { base_commission?: number | string };
+    };
+    const productStore = Array.isArray(row.stores) ? row.stores[0] : row.stores;
+    if (!productStore?.seller_id || productStore.status !== "activo" || !productStore.is_active) {
+      errors.push(`Producto ${product.name}: tienda no disponible.`);
+      continue;
+    }
+
+    const sellerId = productStore.seller_id;
+    const commissionRate = Number(
+      Array.isArray(row.categories) ? row.categories[0]?.base_commission : row.categories?.base_commission ?? 6
+    );
+    const quantity = item.quantity || 1;
+    const subtotal = Number((Number(product.price) * quantity).toFixed(2));
+    const orderNumber = makeOrderNumber();
+    const msmCommission = Number((subtotal * (commissionRate / 100)).toFixed(2));
+
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        order_number: orderNumber,
+        customer_id: user.id,
+        seller_id: sellerId,
+        store_id: product.store_id,
+        receiver_full_name: formData.get("receiverFullName") as string,
+        receiver_phone: formData.get("receiverPhone") as string,
+        province_id: formData.get("provinceId") as string,
+        municipality_id: formData.get("municipalityId") as string,
+        address: formData.get("address") as string,
+        references: formData.get("references") as string,
+        delivery_window: formData.get("deliveryWindow") as string,
+        note: formData.get("note") as string || null,
+        subtotal,
+        msm_commission: msmCommission,
+        gateway_commission: 0,
+        seller_net: Number((subtotal - msmCommission).toFixed(2)),
+        payment_country: formData.get("paymentCountry") as string,
+        payment_currency: formData.get("paymentCurrency") as string,
+        payment_method_id: formData.get("paymentMethodId") as string,
+        legal_accepted_at: new Date().toISOString()
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      errors.push(`Error al crear orden para ${product.name}: ${error.message}`);
+      continue;
+    }
+
+    await admin.from("order_items").insert({
+      order_id: order.id,
+      product_id: product.id,
+      name: product.name,
+      quantity,
+      unit_price: Number(product.price),
+      total: subtotal
+    });
+
+    await admin.from("products").update({ stock: Math.max(Number(product.stock) - quantity, 0) }).eq("id", product.id);
+    await admin.from("terms_acceptances").insert({ order_id: order.id, user_id: user.id, version: "checkout-2026-06" });
+    await admin.from("order_events").insert({
+      order_id: order.id, status: "pendiente_pago", actor_id: user.id,
+      note: "Orden creada desde carrito.",
+      metadata: { productId: product.id, quantity }
+    });
+
+    notifyOrderCreated({
+      orderNumber,
+      customerEmail: customerProfile?.email,
+      customerPhone: customerProfile?.phone,
+      userId: user.id,
+      orderId: order.id
+    });
+
+    orderNumbers.push(orderNumber);
+  }
+
+  revalidatePath("/orders");
+  revalidatePath("/dashboard/economic");
+  revalidatePath("/dashboard/vip");
+
+  const summary = orderNumbers.length
+    ? `Ordenes creadas: ${orderNumbers.join(", ")}.`
+    : "No se pudo crear ninguna orden.";
+  const errorSummary = errors.length ? ` Errores: ${errors.join("; ")}` : "";
+
+  return { ok: orderNumbers.length > 0, message: summary + errorSummary, orderNumber: orderNumbers[0] };
 }

@@ -207,8 +207,20 @@ model Profile {
   fullName            String
   phone               String?
   role                UserRole  @default(cliente)
+  status              String    @default("activo")
   country             String?
   address             String?
+  avatarUrl           String?   @map("avatar_url")
+  bio                 String?
+  whatsapp            String?
+  preferredLanguage   String    @default("es") @map("preferred_language")
+  timezone            String    @default("America/New_York")
+  notificationEmailEnabled Boolean @default(true) @map("notification_email_enabled")
+  notificationWhatsappEnabled Boolean @default(false) @map("notification_whatsapp_enabled")
+  lastLoginAt         DateTime? @map("last_login_at")
+  emailConfirmedAt    DateTime? @map("email_confirmed_at")
+  profileCompletedAt  DateTime? @map("profile_completed_at")
+  adminNote           String?   @map("admin_note")
   paymentMethodValid  Boolean   @default(false)
   customerKycStatus   KycStatus @default(pendiente) @map("customer_kyc_status")
   customerRiskLevel   String    @default("normal") @map("customer_risk_level")
@@ -1126,6 +1138,35 @@ model AtmOperation {
 
   @@index([type, status])
   @@map("atm_operations")
+}
+
+model WhatsAppCart {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  user            Profile   @relation(fields: [userId], references: [id])
+  items           Json
+  customerName    String?   @map("customer_name")
+  customerPhone   String?   @map("customer_phone")
+  customerEmail   String?   @map("customer_email")
+  deliveryAddress String?   @map("delivery_address")
+  deliveryProvince String?  @map("delivery_province")
+  deliveryMunicipality String? @map("delivery_municipality")
+  beneficiaryName  String?  @map("beneficiary_name")
+  beneficiaryPhone String?  @map("beneficiary_phone")
+  totalAmount     Decimal   @map("total_amount") @db.Decimal(14, 2)
+  whatsappNumber  String    @map("whatsapp_number")
+  status          String    @default("enviado")
+  trackingCode    String?   @map("tracking_code")
+  feeAmount       Decimal?  @map("fee_amount") @db.Decimal(14, 2)
+  adminNotes      String?   @map("admin_notes")
+  adminLink       String?   @map("admin_link")
+  viewedAt        DateTime? @map("viewed_at")
+  sentAt          DateTime  @default(now()) @map("sent_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("whatsapp_carts")
 }
 
 model Setting {

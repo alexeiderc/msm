@@ -1,9 +1,11 @@
-import { Clock } from "lucide-react";
+  import { Clock, Eye, EyeOff, Package } from "lucide-react";
+import Link from "next/link";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import {
   DeliveryEvidenceForm,
+  ProductToggleForm,
   SellerAgreementForm,
   StaticOrderButtonsNotice,
   StockUpdateForm,
@@ -104,10 +106,39 @@ async function getVipProfile() {
   }
 }
 
+async function getVipProducts() {
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data: seller } = await supabase
+      .from("sellers").select("id").eq("profile_id", user.id).maybeSingle();
+    if (!seller) return [];
+
+    const { data: stores } = await supabase
+      .from("stores").select("id").eq("seller_id", seller.id);
+    const storeIds = stores?.map((s) => s.id) ?? [];
+    if (!storeIds.length) return [];
+
+    const { data } = await supabase
+      .from("products")
+      .select("id,name,slug,price,currency,stock,status,is_active,created_at,categories(name)")
+      .in("store_id", storeIds)
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function VipDashboardPage() {
   const vipOrders = await getVipOrders();
   const vipZones = await getVipZones();
   const vipProfile = await getVipProfile();
+  const vipProducts = await getVipProducts();
   const firstStore = Array.isArray(vipProfile?.stores) ? vipProfile?.stores[0] : vipProfile?.stores;
 
   return (
@@ -161,6 +192,66 @@ export default async function VipDashboardPage() {
             {((firstStore?.services_active ?? []) as string[]).map((service) => (
               <span key={service} className="rounded-md bg-blue-50 px-3 py-2 text-msm-blue">{service}</span>
             ))}
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+          <div className="flex items-center gap-2">
+            <Package className="text-msm-blue" size={20} />
+            <h2 className="text-lg font-bold">Mis productos ({vipProducts.length})</h2>
+          </div>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[700px] text-left text-sm">
+              <thead className="bg-msm-midnight text-white">
+                <tr>
+                  <th className="p-3">Producto</th>
+                  <th className="p-3">Categoria</th>
+                  <th className="p-3">Precio</th>
+                  <th className="p-3">Stock</th>
+                  <th className="p-3">Estado</th>
+                  <th className="p-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {vipProducts.length ? vipProducts.map((product) => {
+                  const row = product as unknown as {
+                    id: string;
+                    name: string;
+                    slug: string;
+                    price: number | string;
+                    currency?: string;
+                    stock: number | string;
+                    status: string;
+                    is_active: boolean;
+                    categories?: { name?: string } | { name?: string }[];
+                  };
+                  const category = Array.isArray(row.categories) ? row.categories[0]?.name : row.categories?.name;
+                  return (
+                    <tr key={row.id} className="border-t border-msm-line">
+                      <td className="p-3">
+                        <Link href={`/products/${row.slug}`} className="font-bold text-msm-blue hover:underline">
+                          {row.name}
+                        </Link>
+                        <p className="text-xs text-slate-500">ID: {row.id}</p>
+                      </td>
+                      <td className="p-3">{category ?? "Sin categoria"}</td>
+                      <td className="p-3">${Number(row.price).toFixed(2)} {row.currency ?? "USD"}</td>
+                      <td className="p-3">{Number(row.stock)}</td>
+                      <td className="p-3">
+                        <Badge>{row.is_active ? "activo" : row.status}</Badge>
+                      </td>
+                      <td className="p-3">
+                        <ProductToggleForm productId={row.id} isActive={row.is_active} />
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr className="border-t border-msm-line">
+                    <td className="p-3 text-slate-600" colSpan={6}>Sin productos todavia. Publica tu primer producto desde el formulario de abajo.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </section>
 

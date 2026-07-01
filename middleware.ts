@@ -8,7 +8,8 @@ const protectedRoutes: Record<string, UserRole[]> = {
   "/dashboard/economic": ["administrador_economico", "superadmin"],
   "/dashboard/economico": ["administrador_economico", "superadmin"],
   "/dashboard/don-miguel": ["administrador", "administrador_economico", "superadmin"],
-  "/dashboard": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]
+  "/dashboard": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"],
+  "/account": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]
 };
 
 function hasRealSupabaseConfig() {
@@ -24,8 +25,26 @@ function hasRealSupabaseConfig() {
   );
 }
 
+function createSupabaseClient(request: NextRequest, response: NextResponse) {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        }
+      }
+    }
+  );
+}
+
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
 
   if (
@@ -37,35 +56,20 @@ export async function middleware(request: NextRequest) {
   }
 
   if (!hasRealSupabaseConfig()) {
-    return response;
+    return NextResponse.next({ request });
   }
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        }
-      }
-    }
-  );
-
+  let response = NextResponse.next({ request });
+  const supabase = createSupabaseClient(request, response);
   const {
     data: { user }
   } = await supabase.auth.getUser();
 
   const route = Object.keys(protectedRoutes).find((prefix) => pathname.startsWith(prefix));
 
-  if (!route) return response;
+  if (!route) {
+    return response;
+  }
 
   if (!user) {
     const login = request.nextUrl.clone();
@@ -76,7 +80,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role,status")
     .eq("id", user.id)
     .single();
 
@@ -84,9 +88,26 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
+  if (profile.status === "bloqueado") {
+    const login = request.nextUrl.clone();
+    login.pathname = "/auth/login";
+    login.searchParams.set("error", "cuenta_bloqueada");
+    const blockedResponse = NextResponse.redirect(login);
+    const signOutClient = createSupabaseClient(request, blockedResponse);
+    await signOutClient.auth.signOut();
+    return blockedResponse;
+  }
+
+  if (profile.status === "pausado" && pathname.startsWith("/dashboard")) {
+    const account = request.nextUrl.clone();
+    account.pathname = "/account";
+    account.searchParams.set("status", "pausado");
+    return NextResponse.redirect(account);
+  }
+
   return response;
 }
 
 export const config = {
-  matcher: ["/", "/products/:path*", "/dashboard/:path*", "/marketplace/:path*"]
+  matcher: ["/", "/products/:path*", "/dashboard/:path*", "/account", "/account/:path*", "/marketplace/:path*"]
 };

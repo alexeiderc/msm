@@ -11,6 +11,11 @@ const internalRouteLabels: Record<string, string> = {
   "/support": "Abrir soporte",
   "/terms": "Abrir terminos",
   "/auth/signup": "Crear cuenta",
+  "/auth/login": "Iniciar sesion",
+  "/auth/forgot-password": "Recuperar contrasena",
+  "/account": "Abrir mi cuenta",
+  "/account/profile": "Editar perfil",
+  "/account/security": "Seguridad de cuenta",
   "/account/kyc": "Validar cuenta",
   "/vendedores/solicitud": "Solicitar perfil VIP",
   "/checkout": "Abrir checkout",
@@ -28,7 +33,8 @@ export const elianaActionLinks = [
   ["/support", "Soporte"],
   ["/payment-methods", "Metodos"],
   ["/tiendas-vip", "Tiendas VIP"],
-  ["/auth/signup", "Crear cuenta"]
+  ["/auth/signup", "Crear cuenta"],
+  ["/account/profile", "Mi perfil"]
 ] as const;
 
 function cleanToken(token: string) {

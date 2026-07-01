@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRightLeft, Ban, ClipboardCheck, Eye, FileWarning, Percent, QrCode, UserCheck, WalletCards } from "lucide-react";
+import { ArrowRightLeft, Ban, ClipboardCheck, Eye, FileWarning, Percent, QrCode, ShoppingBag, UserCheck, UsersRound, WalletCards } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
@@ -164,6 +164,12 @@ export default async function AdminDashboardPage() {
               <span className="flex items-center gap-3 rounded-md border border-msm-line p-3 text-left font-semibold">
                 <Eye size={18} /> Ver audit_logs y acciones sensibles
               </span>
+              <Link href="/dashboard/admin/users" className="flex items-center gap-3 rounded-md border border-msm-line p-3 text-left font-semibold text-msm-blue hover:border-msm-blue">
+                <UsersRound size={18} /> Administrar usuarios y roles
+              </Link>
+              <Link href="/dashboard/admin/whatsapp-carts" className="flex items-center gap-3 rounded-md border border-msm-line p-3 text-left font-semibold text-msm-blue hover:border-msm-blue">
+                <ShoppingBag size={18} /> Pedidos WhatsApp
+              </Link>
             </div>
             <ApproveSellerForm />
             <SellerCommissionForm />

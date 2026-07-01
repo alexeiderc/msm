@@ -217,3 +217,91 @@ export async function updateProductStock(_: ActionResult, formData: FormData): P
     return { ok: false, message: error instanceof Error ? error.message : "No se pudo actualizar el stock." };
   }
 }
+
+export async function toggleProductActive(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const productId = formData.get("productId") as string;
+  if (!productId) return { ok: false, message: "ID de producto requerido." };
+
+  try {
+    const supabase = await createClient();
+    const admin = createAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, message: "Sesion requerida." };
+
+    const { data: product } = await admin
+      .from("products")
+      .select("is_active,status")
+      .eq("id", productId)
+      .maybeSingle();
+
+    if (!product) return { ok: false, message: "Producto no encontrado." };
+
+    const newIsActive = !product.is_active;
+    const { error } = await admin
+      .from("products")
+      .update({
+        is_active: newIsActive,
+        status: newIsActive ? "activo" : "pausado",
+        updated_at: new Date().toISOString()
+      })
+      .eq("id", productId);
+
+    if (error) return { ok: false, message: error.message };
+
+    await admin.from("audit_logs").insert({
+      actor_id: user.id,
+      action: "product.toggle_active",
+      entity: "products",
+      entity_id: productId,
+      after: { is_active: newIsActive, status: newIsActive ? "activo" : "pausado" }
+    });
+
+    revalidatePath("/dashboard/vip");
+    revalidatePath("/products");
+    return { ok: true, message: newIsActive ? "Producto activado." : "Producto desactivado." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "No se pudo actualizar el producto." };
+  }
+}
+
+export async function updateVipProduct(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const productId = formData.get("productId") as string;
+  if (!productId) return { ok: false, message: "ID de producto requerido." };
+
+  try {
+    const supabase = await createClient();
+    const admin = createAdminClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { ok: false, message: "Sesion requerida." };
+
+    const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+    const price = formData.get("price");
+    const name = formData.get("name");
+    const description = formData.get("description");
+    const stock = formData.get("stock");
+
+    if (price) updates.price = Number(price);
+    if (name) updates.name = name;
+    if (description) updates.description = description;
+    if (stock) updates.stock = Number(stock);
+
+    if (Object.keys(updates).length <= 1) return { ok: false, message: "No hay campos para actualizar." };
+
+    const { error } = await admin.from("products").update(updates).eq("id", productId);
+    if (error) return { ok: false, message: error.message };
+
+    await admin.from("audit_logs").insert({
+      actor_id: user.id,
+      action: "product.update",
+      entity: "products",
+      entity_id: productId,
+      after: updates
+    });
+
+    revalidatePath("/dashboard/vip");
+    revalidatePath("/products");
+    return { ok: true, message: "Producto actualizado." };
+  } catch (error) {
+    return { ok: false, message: error instanceof Error ? error.message : "No se pudo actualizar el producto." };
+  }
+}

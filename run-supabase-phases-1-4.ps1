@@ -91,7 +91,7 @@ if (-not (Test-Path $SupabaseMigrationsDir)) {
 }
 
 if (Test-Path $SourceMigrationsDir) {
-  Copy-Item -LiteralPath (Join-Path $SourceMigrationsDir "*.sql") -Destination $SupabaseMigrationsDir -Force
+  Copy-Item -Path (Join-Path $SourceMigrationsDir "*.sql") -Destination $SupabaseMigrationsDir -Force
   Write-Host "Migraciones copiadas a supabase/migrations." -ForegroundColor Green
 }
 

@@ -79,16 +79,16 @@ export default async function OrdersPage() {
                 <div className="flex flex-wrap gap-2">
                   <Badge>{order.status}</Badge>
                   <Link
+                    href={`/orders/${order.id}`}
+                    className="rounded-md border border-msm-line px-3 py-2 text-sm font-semibold"
+                  >
+                    Detalle
+                  </Link>
+                  <Link
                     href={`/ordenes/${order.id}/comprobante`}
                     className="rounded-md border border-msm-line px-3 py-2 text-sm font-semibold"
                   >
                     Comprobante
-                  </Link>
-                  <Link
-                    href={`/support?orderId=${order.id}`}
-                    className="rounded-md border border-msm-line px-3 py-2 text-sm font-semibold"
-                  >
-                    Soporte
                   </Link>
                 </div>
               </div>

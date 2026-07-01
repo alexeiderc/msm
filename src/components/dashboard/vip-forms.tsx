@@ -5,7 +5,7 @@ import { Camera, CheckCircle2, PackageCheck, Save, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { CubaLocationSelects } from "@/components/forms/cuba-location-selects";
-import { createVipProduct, updateProductStock } from "@/server/actions/products";
+import { createVipProduct, toggleProductActive, updateProductStock } from "@/server/actions/products";
 import {
   submitDeliveryEvidence,
   updateVipOrderStatusAction
@@ -158,6 +158,19 @@ export function SellerAgreementForm() {
       <ActionMessage state={state} />
       <Button type="submit" disabled={pending}>
         {pending ? "Guardando..." : "Aceptar acuerdo version vip-2026-06"}
+      </Button>
+    </form>
+  );
+}
+
+export function ProductToggleForm({ productId, isActive }: { productId: string; isActive: boolean }) {
+  const [state, formAction, pending] = useActionState(toggleProductActive, emptyActionResult);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="productId" value={productId} />
+      <Button type="submit" disabled={pending} className="min-h-8 min-w-[90px] px-2 text-xs">
+        {pending ? "..." : isActive ? "Desactivar" : "Activar"}
       </Button>
     </form>
   );

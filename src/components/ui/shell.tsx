@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Bot, CircleDollarSign, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards } from "lucide-react";
 import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LowDataModeToggle } from "@/components/performance/low-data-mode";
+import { CartCount } from "@/components/cart/cart-count";
 
 const navItems = [
   ["Inicio", "/", Home],
@@ -26,6 +27,7 @@ const helpLinks = [
   ["Tiendas VIP", "/tiendas-vip"],
   ["Soporte", "/support"],
   ["Terminos", "/terms"],
+  ["Mi cuenta", "/account"],
   ["Cuenta", "/account/kyc"]
 ] as const;
 
@@ -75,8 +77,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               <LowDataModeToggle />
-              <Link href="/cart" className="grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-600 transition hover:border-msm-blue hover:text-msm-blue" aria-label="Carrito">
+              <Link href="/cart" className="relative grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-600 transition hover:border-msm-blue hover:text-msm-blue" aria-label="Carrito">
                 <ShoppingCart size={18} />
+                <CartCount />
               </Link>
               <Link href="/auth/login" className="grid h-10 w-10 place-items-center rounded-md bg-msm-midnight text-white transition hover:bg-msm-blue" aria-label="Cuenta">
                 <UserRound size={18} />

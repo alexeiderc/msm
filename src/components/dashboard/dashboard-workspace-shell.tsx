@@ -4,7 +4,6 @@ import {
   BadgeDollarSign,
   BarChart3,
   Boxes,
-  ClipboardCheck,
   CreditCard,
   FileText,
   LayoutDashboard,
@@ -49,9 +48,9 @@ const roleConfig: Record<UserRole, { title: string; subtitle: string; href: stri
     href: "/dashboard/admin",
     items: [
       ["Admin", "/dashboard/admin", LayoutDashboard, "Control operativo del marketplace."],
+      ["Usuarios", "/dashboard/admin/users", UsersRound, "Roles, KYC, estado y auditoria."],
       ["Vendedores", "/dashboard/admin#vendedores", UsersRound, "Aprobar, suspender y destacar."],
-      ["Productos", "/dashboard/admin#productos", Boxes, "Publicacion y control por zona."],
-      ["Auditoria", "/dashboard/admin#auditoria", ClipboardCheck, "Logs, incidencias y acciones sensibles."]
+      ["Productos", "/dashboard/admin#productos", Boxes, "Publicacion y control por zona."]
     ]
   },
   administrador_economico: {
@@ -72,8 +71,8 @@ const roleConfig: Record<UserRole, { title: string; subtitle: string; href: stri
     items: [
       ["Don Miguel", "/dashboard/don-miguel", BarChart3, "Metricas ejecutivas."],
       ["Admin", "/dashboard/admin", LayoutDashboard, "Control total de tiendas y usuarios."],
+      ["Usuarios", "/dashboard/admin/users", UsersRound, "Roles, KYC, estado y auditoria."],
       ["Economia", "/dashboard/economic", CreditCard, "Pagos, ledger y liquidaciones."],
-      ["Cajeros MSM", "/atm", WalletCards, "Vision financiera y reservas QR."]
     ]
   }
 };

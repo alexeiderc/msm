@@ -31,13 +31,68 @@ export const passwordResetSchema = z.object({
   email: z.string().email("Escribe un correo valido.")
 });
 
+export const resetPasswordSchema = z.object({
+  password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres."),
+  confirmPassword: z.string().min(8, "Confirma la contrasena.")
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contrasenas no coinciden.",
+  path: ["confirmPassword"]
+});
+
 export const signupSchema = z.object({
   fullName: z.string().min(3, "Escribe tu nombre completo."),
   phone: z.string().min(7, "Escribe un telefono valido."),
+  country: z.string().min(2, "Indica tu pais.").default("Estados Unidos"),
   email: z.string().email("Escribe un correo valido."),
-  password: z.string().min(6, "La contrasena debe tener al menos 6 caracteres."),
+  password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres."),
+  confirmPassword: z.string().min(8, "Confirma la contrasena."),
+  termsAccepted: z.literal("on", {
+    message: "Debes aceptar los terminos para crear cuenta."
+  }),
   roleIntent: z.enum(["cliente", "vendedor_vip"]).default("cliente"),
   next: z.string().optional()
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Las contrasenas no coinciden.",
+  path: ["confirmPassword"]
+});
+
+export const profileUpdateSchema = z.object({
+  fullName: z.string().min(3, "Escribe tu nombre completo."),
+  phone: z.string().min(7, "Escribe un telefono valido."),
+  country: z.string().min(2, "Indica tu pais."),
+  address: z.string().max(500).optional(),
+  whatsapp: z.string().max(80).optional(),
+  bio: z.string().max(300, "La bio debe tener 300 caracteres o menos.").optional(),
+  preferredLanguage: z.enum(["es", "en"]).default("es"),
+  timezone: z.string().min(2).max(80).default("America/New_York"),
+  notificationEmailEnabled: z.string().optional(),
+  notificationWhatsappEnabled: z.string().optional()
+});
+
+export const avatarUploadSchema = z.object({
+  avatarUrl: z.string().url("URL de avatar invalida.").optional().or(z.literal(""))
+});
+
+export const securityUpdateSchema = resetPasswordSchema;
+
+export const adminUserRoleSchema = z.object({
+  userId: z.string().uuid(),
+  role: z.enum(["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]),
+  note: z.string().max(700).optional()
+});
+
+export const adminUserStatusSchema = z.object({
+  userId: z.string().uuid(),
+  status: z.enum(["activo", "pausado", "bloqueado"]),
+  note: z.string().max(700).optional()
+});
+
+export const adminUserKycSchema = z.object({
+  userId: z.string().uuid(),
+  status: z.enum(["pendiente", "aprobado", "rechazado", "requiere_revision"]),
+  riskLevel: z.enum(["normal", "revision", "alto", "bloqueado"]).default("normal"),
+  paymentMethodValid: z.string().optional(),
+  note: z.string().max(700).optional()
 });
 
 export const sellerKycSchema = z.object({

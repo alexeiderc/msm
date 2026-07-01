@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { supportTicketSchema } from "@/lib/validations";
+import { notifyOrderStatusChange } from "@/lib/notifications";
 import type { ActionResult } from "@/types/actions";
 
 export async function openSupportTicket(_: ActionResult, formData: FormData): Promise<ActionResult> {
@@ -56,6 +57,25 @@ export async function openSupportTicket(_: ActionResult, formData: FormData): Pr
     entity: "support_tickets",
     entity_id: ticket.id,
     after: { reason: parsed.data.reason, subject: parsed.data.subject, orderNumber: order.order_number }
+  });
+
+  let profileForTicket: { email?: string; phone?: string } | null = null;
+  try {
+    const result = await admin
+      .from("profiles")
+      .select("email,phone")
+      .eq("id", user.id)
+      .maybeSingle();
+    profileForTicket = result.data;
+  } catch {}
+
+  notifyOrderStatusChange({
+    orderNumber: order.order_number,
+    status: "incidencia",
+    customerEmail: profileForTicket?.email,
+    customerPhone: profileForTicket?.phone,
+    userId: user.id,
+    orderId: parsed.data.orderId
   });
 
   revalidatePath("/support");

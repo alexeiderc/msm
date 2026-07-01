@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LoginForm } from "@/components/auth/login-form";
 
-export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
   const params = await searchParams;
 
   return (
@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <span className="rounded-md border border-blue-100 bg-blue-50 p-3 text-msm-blue"><ShieldCheck className="mb-1" size={16} /> Acceso seguro</span>
           <span className="rounded-md border border-blue-100 bg-blue-50 p-3 text-msm-blue"><Sparkles className="mb-1" size={16} /> ELIANA te guia</span>
         </div>
-        <LoginForm next={params.next} />
+        <LoginForm next={params.next} error={params.error} />
         <p className="mt-4 text-center text-sm font-semibold text-slate-600">
           No tienes cuenta?{" "}
           <Link href="/auth/signup" className="text-msm-blue hover:text-msm-electric">

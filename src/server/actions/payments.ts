@@ -10,6 +10,7 @@ import {
   paymentProofSchema,
   paymentReviewSchema
 } from "@/lib/validations";
+import { notifyPaymentProofReceived, notifyPaymentApproved } from "@/lib/notifications";
 import type { ActionResult } from "@/types/actions";
 
 async function writeFraudAlert(params: {
@@ -256,6 +257,32 @@ export async function submitPaymentProof(_: ActionResult, formData: FormData): P
     note: "Comprobante de pago recibido para revision economica.",
     metadata: { reference: parsed.data.reference, amount: parsed.data.amount, currency: parsed.data.currency }
   });
+
+  let proofNotify: { order_number: string; customer_id: string; profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[] } | null = null;
+  try {
+    const result = await admin
+      .from("orders")
+      .select("order_number,customer_id,profiles!inner(email,phone)")
+      .eq("id", parsed.data.orderId)
+      .maybeSingle();
+    proofNotify = result.data;
+  } catch {}
+  if (proofNotify) {
+    const row = proofNotify as unknown as {
+      order_number: string;
+      customer_id: string;
+      profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[];
+    };
+    const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+    notifyPaymentProofReceived({
+      orderNumber: row.order_number,
+      customerEmail: profile?.email,
+      customerPhone: profile?.phone,
+      userId: row.customer_id,
+      orderId: parsed.data.orderId
+    });
+  }
+
   revalidatePath("/dashboard/economic");
   revalidatePath("/orders");
   return { ok: true, message: "Comprobante recibido. Economia debe revisarlo." };
@@ -395,6 +422,33 @@ export async function reviewPaymentProof(_: ActionResult, formData: FormData): P
     entity_id: parsed.data.proofId,
     after: { decision: parsed.data.decision, orderId: parsed.data.orderId }
   });
+
+  if (parsed.data.decision === "aprobado") {
+    let approvedOrder: { order_number: string; customer_id: string; profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[] } | null = null;
+    try {
+      const result = await admin
+        .from("orders")
+        .select("order_number,customer_id,profiles!inner(email,phone)")
+        .eq("id", parsed.data.orderId)
+        .maybeSingle();
+      approvedOrder = result.data;
+    } catch {}
+    if (approvedOrder) {
+      const row = approvedOrder as unknown as {
+        order_number: string;
+        customer_id: string;
+        profiles?: { email?: string; phone?: string } | { email?: string; phone?: string }[];
+      };
+      const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+      notifyPaymentApproved({
+        orderNumber: row.order_number,
+        customerEmail: profile?.email,
+        customerPhone: profile?.phone,
+        userId: row.customer_id,
+        orderId: parsed.data.orderId
+      });
+    }
+  }
 
   revalidatePath("/dashboard/economic");
   revalidatePath("/dashboard/vip");

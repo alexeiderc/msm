@@ -49,7 +49,35 @@ export const elianaCommandIntents: ElianaCommandIntent[] = [
     label: "Crear cuenta",
     description: "Crea cuenta y luego completa KYC para comprar con seguridad.",
     href: "/auth/signup",
-    keywords: ["cuenta", "registrar", "registro", "signup", "kyc", "validar"]
+    keywords: ["crear cuenta", "registrar", "registro", "signup", "abrir cuenta"]
+  },
+  {
+    id: "login",
+    label: "Iniciar sesion",
+    description: "Entra a tu cuenta MSM MY STORE.",
+    href: "/auth/login",
+    keywords: ["login", "iniciar sesion", "entrar", "acceder"]
+  },
+  {
+    id: "profile",
+    label: "Editar perfil",
+    description: "Administra tu foto, bio, telefono, pais y preferencias.",
+    href: "/account/profile",
+    keywords: ["perfil", "foto", "avatar", "bio", "whatsapp", "mis datos"]
+  },
+  {
+    id: "password",
+    label: "Recuperar contrasena",
+    description: "Solicita un enlace seguro para recuperar acceso.",
+    href: "/auth/forgot-password",
+    keywords: ["contrasena", "clave", "olvide", "recuperar", "reset"]
+  },
+  {
+    id: "kyc",
+    label: "Validar cuenta",
+    description: "Completa KYC, titular de pago y politica antifraude.",
+    href: "/account/kyc",
+    keywords: ["kyc", "validar", "verificar", "documento", "titular pago"]
   },
   {
     id: "wallet",

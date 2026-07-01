@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
-import { useState } from "react";
+import { useActionState, useEffect, useState as useReactState } from "react";
 import { FileCheck, LockKeyhole, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
-import { createCheckoutOrder, type ActionState } from "@/server/actions/orders";
+import { createCheckoutOrder, createBatchCheckoutOrders, type ActionState } from "@/server/actions/orders";
 import {
   cubaLocations,
   demoMunicipalityId,
@@ -23,10 +22,21 @@ const initialState: ActionState = {
 };
 
 export function CheckoutForm({ productId }: { productId?: string }) {
-  const [state, formAction, pending] = useActionState(createCheckoutOrder, initialState);
-  const [province, setProvince] = useState("Santiago de Cuba");
-  const [municipality, setMunicipality] = useState("Segundo Frente");
+  const [hasCartItems, setHasCartItems] = useReactState(false);
+  const action = hasCartItems ? createBatchCheckoutOrders : createCheckoutOrder;
+  const [state, formAction, pending] = useActionState(action, initialState);
+  const [province, setProvince] = useReactState("Santiago de Cuba");
+  const [municipality, setMunicipality] = useReactState("Segundo Frente");
   const municipalities = getMunicipalitiesForProvince(province);
+
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("msm-checkout-items");
+      if (stored) {
+        setHasCartItems(true);
+      }
+    } catch {}
+  }, []);
 
   function handleProvinceChange(nextProvince: string) {
     const nextMunicipalities = getMunicipalitiesForProvince(nextProvince);
@@ -44,6 +54,9 @@ export function CheckoutForm({ productId }: { productId?: string }) {
       <form action={formAction} className="mt-6 grid gap-4">
         <input type="hidden" name="productId" value={productId ?? ""} />
         <input type="hidden" name="quantity" value="1" />
+        {hasCartItems ? (
+          <input type="hidden" name="cartItems" value={sessionStorage.getItem("msm-checkout-items") ?? "[]"} />
+        ) : null}
         <input type="hidden" name="provinceId" value={demoProvinceId(province)} />
         <input type="hidden" name="municipalityId" value={demoMunicipalityId(province, municipality)} />
         <input type="hidden" name="receiverProvinceName" value={province} />

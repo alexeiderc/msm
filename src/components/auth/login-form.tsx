@@ -5,10 +5,12 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { login } from "@/server/actions/auth";
+import { authRouteErrors } from "@/lib/auth/routing";
 import { emptyActionResult } from "@/types/actions";
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({ next, error }: { next?: string; error?: string }) {
   const [state, formAction, pending] = useActionState(login, emptyActionResult);
+  const routeError = error ? authRouteErrors[error] : null;
 
   return (
     <form action={formAction} className="mt-6 grid gap-3">
@@ -20,6 +22,9 @@ export function LoginForm({ next }: { next?: string }) {
           Olvide mi contrasena
         </Link>
       </div>
+      {routeError ? (
+        <p className="rounded-md border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-700">{routeError}</p>
+      ) : null}
       {state.message ? (
         <p className={state.ok ? "rounded-md border border-blue-100 bg-blue-50 p-3 text-sm font-semibold text-msm-blue" : "rounded-md border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-700"}>
           {state.message}
