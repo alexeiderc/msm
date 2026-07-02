@@ -1,6 +1,9 @@
 const IDSWYFT_API_URL = process.env.IDSWYFT_API_URL || "http://localhost:3000";
 const IDSWYFT_API_KEY = process.env.IDSWYFT_API_KEY || "";
 
+// La pagina de verificacion hosted de Idswyft esta en un dominio distinto a la API
+const IDSWYFT_FRONTEND_URL = process.env.IDSWYFT_FRONTEND_URL || "https://www.idswyft.app";
+
 export type IdswyftSessionResult = {
   verification_id: string;
   verification_url: string;
@@ -46,7 +49,12 @@ export async function createIdswyftSession(userId: string, returnUrl: string): P
     throw new Error(`Idswyft session error: ${err}`);
   }
 
-  return res.json();
+  const data = await res.json();
+  return {
+    verification_id: data.verification_id,
+    session_token: data.session_token,
+    verification_url: `${IDSWYFT_FRONTEND_URL}/user-verification?session=${data.session_token}`,
+  };
 }
 
 export async function getIdswyftVerification(verificationId: string): Promise<{
