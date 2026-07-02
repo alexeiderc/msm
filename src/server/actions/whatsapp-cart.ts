@@ -203,11 +203,13 @@ export async function getAllWhatsAppCarts() {
 
 export async function saveWhatsAppNumber(number: string) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("No autorizado");
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) return { success: false, message: "No autorizado" };
 
   const admin = createAdminClient();
-  const { error } = await admin
+
+  // Primero intentar actualizar, si no existe hacer insert
+  const { error: upsertError } = await admin
     .from("settings")
     .upsert({
       key: "whatsapp_number",
@@ -216,7 +218,10 @@ export async function saveWhatsAppNumber(number: string) {
       updated_by: user.id,
     }, { onConflict: "key" });
 
-  if (error) throw new Error("Error al guardar: " + error.message);
+  if (upsertError) {
+    console.error("Upsert error:", upsertError);
+    return { success: false, message: upsertError.message };
+  }
 
   return { success: true };
 }

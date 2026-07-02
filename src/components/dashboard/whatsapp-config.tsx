@@ -21,11 +21,15 @@ export function WhatsAppNumberConfig() {
     setSaving(true);
     setSaved(false);
     try {
-      await saveWhatsAppNumber(number);
+      const result = await saveWhatsAppNumber(number);
+      if (!result.success) {
+        alert("Error: " + result.message);
+        return;
+      }
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch {
-      alert("Error al guardar el número");
+    } catch (e) {
+      alert("Error al guardar: " + (e instanceof Error ? e.message : "desconocido"));
     } finally {
       setSaving(false);
     }
