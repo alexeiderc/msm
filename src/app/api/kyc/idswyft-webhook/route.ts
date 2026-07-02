@@ -4,15 +4,29 @@ import type { IdswyftWebhookPayload } from "@/lib/idswyft/client";
 
 const WEBHOOK_SECRET = process.env.IDSWYFT_WEBHOOK_SECRET;
 
+function verifySignature(rawBody: string, signatureHeader: string | null): boolean {
+  if (!WEBHOOK_SECRET || !signatureHeader) return false;
+  const expected = `sha256=${crypto
+    .createHmac("sha256", WEBHOOK_SECRET)
+    .update(rawBody, "utf8")
+    .digest("hex")}`;
+  if (expected.length !== signatureHeader.length) return false;
+  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
+}
+
+import crypto from "crypto";
+
 export async function POST(request: NextRequest) {
-  const signature = request.headers.get("x-webhook-signature");
-  if (WEBHOOK_SECRET && signature !== WEBHOOK_SECRET) {
+  const rawBody = await request.text();
+
+  const signatureHeader = request.headers.get("X-Idswyft-Signature");
+  if (WEBHOOK_SECRET && !verifySignature(rawBody, signatureHeader)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   let payload: IdswyftWebhookPayload;
   try {
-    payload = await request.json();
+    payload = JSON.parse(rawBody);
   } catch {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
