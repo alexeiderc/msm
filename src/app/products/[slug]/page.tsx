@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft, BadgeCheck, Clock, MapPin, ShieldCheck, ShoppingCart, Store } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
+import { AddToCartButton } from "@/components/cart/add-to-cart";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { currency } from "@/lib/utils";
 import { findFallbackProduct } from "@/lib/public-products";
@@ -20,6 +21,8 @@ type DetailProduct = {
   category: string;
   store: string;
   storeSlug?: string;
+  storeId?: string;
+  sellerId?: string;
   country?: string;
   province: string;
   municipality?: string;
@@ -40,7 +43,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("products")
-      .select("id,name,slug,description,price,currency,stock,country,province,municipality,delivery_zone,warranty,promised_sla,availability,status,is_active,product_images(url),categories(name),stores(name,slug,status,is_active,country,province,municipality,delivery_zones)")
+      .select("id,name,slug,description,price,currency,stock,country,province,municipality,delivery_zone,warranty,promised_sla,availability,status,is_active,store_id,product_images(url),categories(name),stores(id,name,slug,status,is_active,country,province,municipality,delivery_zones,seller_id)")
       .eq("slug", slug)
       .eq("status", "activo")
       .eq("is_active", true)
@@ -60,6 +63,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       country?: string | null;
       province?: string | null;
       municipality?: string | null;
+      store_id?: string | null;
       delivery_zone?: string | null;
       warranty?: string | null;
       promised_sla?: string | null;
@@ -71,6 +75,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
         slug?: string;
         status?: string;
         is_active?: boolean;
+        seller_id?: string | null;
         country?: string | null;
         province?: string | null;
         municipality?: string | null;
@@ -80,6 +85,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
         slug?: string;
         status?: string;
         is_active?: boolean;
+        seller_id?: string | null;
         country?: string | null;
         province?: string | null;
         municipality?: string | null;
@@ -108,6 +114,8 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       category: category ?? "Producto",
       store: store?.name ?? "Tienda VIP",
       storeSlug: store?.slug,
+      storeId: row.store_id ?? undefined,
+      sellerId: store?.seller_id ?? undefined,
       country: row.country || store?.country || "Cuba",
       province: row.province || store?.province || "",
       municipality: row.municipality || store?.municipality || "",
@@ -193,11 +201,25 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </div>
               <div className="mt-7 flex flex-wrap gap-3">
+                {isDatabaseId(product.id) && product.sellerId ? (
+                  <AddToCartButton
+                    productId={product.id}
+                    name={product.name}
+                    price={product.price}
+                    currency={product.currency ?? "USD"}
+                    image={product.image}
+                    store={product.store}
+                    storeId={product.storeId ?? product.id}
+                    sellerId={product.sellerId}
+                    stock={product.stock}
+                    slug={product.slug}
+                  />
+                ) : null}
                 <Link
                   href={checkoutHref}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-msm-blue px-5 text-sm font-bold text-white shadow-glow transition hover:bg-msm-electric"
                 >
-                  <ShoppingCart size={17} /> Comprar
+                  <ShoppingCart size={17} /> Comprar ahora
                 </Link>
                 {product.storeSlug ? (
                   <Link

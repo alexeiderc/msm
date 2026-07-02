@@ -259,6 +259,11 @@ model Profile {
   customerKycDecisions CustomerKycReview[] @relation("CustomerKycReviewReviewer")
   walletAccounts      WalletAccount[]
   walletTransactions  WalletTransaction[]
+  walletLoadRequests  WalletLoadRequest[] @relation("WalletLoadRequestUser")
+  walletLoadReviews   WalletLoadReview[] @relation("WalletLoadReviewReviewer")
+  walletReviewedLoads WalletLoadRequest[] @relation("WalletLoadRequestReviewer")
+  walletHolds         WalletHold[]
+  walletScoreEvents   WalletScoreEvent[]
   atmReservations     AtmReservation[]
   atmOperations       AtmOperation[]
   settingsUpdated     Setting[]
@@ -475,6 +480,9 @@ model Order {
   paymentMethod        PaymentMethod?     @relation(fields: [paymentMethodId], references: [id])
   paymentAccountId     String?            @db.Uuid
   paymentAccount       PaymentAccount?    @relation(fields: [paymentAccountId], references: [id])
+  paymentMode          String             @default("manual") @map("payment_mode")
+  walletTransactionId  String?            @map("wallet_transaction_id") @db.Uuid
+  walletTransaction    WalletTransaction? @relation(fields: [walletTransactionId], references: [id])
   customerRiskScore     Int                @default(0) @map("customer_risk_score")
   customerRiskLevel     String             @default("normal") @map("customer_risk_level")
   customerRiskReasons   String[]           @default([]) @map("customer_risk_reasons")
@@ -688,6 +696,7 @@ model PaymentMethod {
   proofs                PaymentProof[]
   remittances           Remittance[]
   remittanceProofs      RemittancePaymentProof[]
+  walletLoadRequests    WalletLoadRequest[]
 
   @@index([country, currency, type, status, priority])
   @@map("payment_methods")
@@ -711,6 +720,7 @@ model PaymentAccount {
   proofs        PaymentProof[]
   remittances   Remittance[]
   remittanceProofs RemittancePaymentProof[]
+  walletLoadRequests WalletLoadRequest[]
 
   @@index([methodId, status])
   @@map("payment_accounts")
@@ -996,6 +1006,7 @@ model WalletAccount {
   createdAt       DateTime            @default(now()) @map("created_at")
   updatedAt       DateTime            @updatedAt @map("updated_at")
   transactions    WalletTransaction[]
+  holds           WalletHold[]
 
   @@unique([userId, currency])
   @@map("wallet_accounts")
@@ -1016,9 +1027,91 @@ model WalletTransaction {
   note          String?
   metadata      Json?
   createdAt     DateTime                @default(now()) @map("created_at")
+  orders        Order[]
 
   @@index([userId, createdAt])
   @@map("wallet_transactions")
+}
+
+model WalletLoadRequest {
+  id               String          @id @default(uuid()) @db.Uuid
+  loadNumber       String          @unique @map("load_number")
+  userId           String          @map("user_id") @db.Uuid
+  user             Profile         @relation("WalletLoadRequestUser", fields: [userId], references: [id])
+  amount           Decimal         @db.Decimal(14, 2)
+  currency         String          @default("USD")
+  country          String
+  paymentMethodId  String?         @map("payment_method_id") @db.Uuid
+  paymentMethod    PaymentMethod?  @relation(fields: [paymentMethodId], references: [id])
+  paymentAccountId String?         @map("payment_account_id") @db.Uuid
+  paymentAccount   PaymentAccount? @relation(fields: [paymentAccountId], references: [id])
+  senderName       String          @map("sender_name")
+  reference        String
+  proofUrl         String?         @map("proof_url")
+  note             String?
+  status           String          @default("pendiente_revision")
+  reviewedById     String?         @map("reviewed_by") @db.Uuid
+  reviewer         Profile?        @relation("WalletLoadRequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt       DateTime?       @map("reviewed_at")
+  reviewNote       String?         @map("review_note")
+  reserveCurrency  String?         @default("USDT") @map("reserve_currency")
+  reserveRate      Decimal?        @map("reserve_rate") @db.Decimal(14, 6)
+  reserveAmount    Decimal?        @map("reserve_amount") @db.Decimal(14, 2)
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  reviews          WalletLoadReview[]
+
+  @@index([userId, status, createdAt])
+  @@index([status, createdAt])
+  @@map("wallet_load_requests")
+}
+
+model WalletLoadReview {
+  id         String            @id @default(uuid()) @db.Uuid
+  requestId  String            @map("request_id") @db.Uuid
+  request    WalletLoadRequest @relation(fields: [requestId], references: [id])
+  reviewerId String            @map("reviewer_id") @db.Uuid
+  reviewer   Profile           @relation("WalletLoadReviewReviewer", fields: [reviewerId], references: [id])
+  decision   String
+  note       String?
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  @@index([requestId])
+  @@map("wallet_load_reviews")
+}
+
+model WalletHold {
+  id            String        @id @default(uuid()) @db.Uuid
+  walletId      String        @map("wallet_id") @db.Uuid
+  wallet        WalletAccount @relation(fields: [walletId], references: [id])
+  userId        String        @map("user_id") @db.Uuid
+  user          Profile       @relation(fields: [userId], references: [id])
+  amount        Decimal       @db.Decimal(14, 2)
+  currency      String
+  reason        String
+  referenceType String?       @map("reference_type")
+  referenceId   String?       @map("reference_id") @db.Uuid
+  status        String        @default("activo")
+  expiresAt     DateTime?     @map("expires_at")
+  releasedAt    DateTime?     @map("released_at")
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@index([userId, status])
+  @@map("wallet_holds")
+}
+
+model WalletScoreEvent {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  user      Profile  @relation(fields: [userId], references: [id])
+  source    String   @default("saldo_msm")
+  eventType String   @map("event_type")
+  points    Int      @default(0)
+  metadata  Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, createdAt])
+  @@map("wallet_score_events")
 }
 
 model AtmLocation {

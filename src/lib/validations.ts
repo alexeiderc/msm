@@ -13,9 +13,10 @@ export const checkoutSchema = z.object({
   references: z.string().min(5, "Agrega referencias para facilitar la entrega."),
   deliveryWindow: z.string().min(3, "Selecciona o escribe un horario de entrega."),
   note: z.string().max(500).optional(),
+  paymentMode: z.enum(["saldo_msm", "manual"]).default("saldo_msm"),
   paymentCountry: z.string().min(2, "Selecciona el pais de pago."),
   paymentCurrency: z.string().min(3, "Selecciona la moneda."),
-  paymentMethodId: z.string().uuid("Selecciona un metodo de pago valido."),
+  paymentMethodId: z.string().uuid("Selecciona un metodo de pago valido.").optional().or(z.literal("")),
   legalAccepted: z.literal("on", {
     message: "Debes aceptar las politicas legales de MSM."
   })
@@ -236,6 +237,24 @@ export const payoutSchema = z.object({
   receiptUrl: z.string().url().optional().or(z.literal("")),
   periodStart: z.string().min(8),
   periodEnd: z.string().min(8)
+});
+
+export const walletLoadRequestSchema = z.object({
+  amount: z.coerce.number().positive("El monto debe ser mayor que cero."),
+  currency: z.string().min(3).max(10).default("USD"),
+  country: z.string().min(2, "Selecciona el pais desde donde pagas."),
+  paymentMethodId: z.string().uuid("Selecciona un metodo valido.").optional().or(z.literal("")),
+  paymentAccountId: z.string().uuid().optional().or(z.literal("")),
+  senderName: z.string().min(3, "Indica quien envia el dinero."),
+  reference: z.string().min(3, "Agrega una referencia del pago."),
+  proofUrl: z.string().url("Pega una URL valida del comprobante.").optional().or(z.literal("")),
+  note: z.string().max(700).optional()
+});
+
+export const walletLoadReviewSchema = z.object({
+  requestId: z.string().uuid(),
+  decision: z.enum(["aprobado", "rechazado", "nueva_evidencia"]),
+  note: z.string().max(1000).optional()
 });
 
 export const sellerApprovalSchema = z.object({

@@ -1,5 +1,4 @@
 import { Activity, CircleDollarSign, PackageCheck, ShieldAlert, Store, WalletCards } from "lucide-react";
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -151,8 +150,7 @@ export default async function ExecutiveDashboardPage() {
   const metrics = await getExecutiveMetrics();
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <Badge>Reporte ejecutivo</Badge>
         <h1 className="mt-3 text-3xl font-bold">Panel para Don Miguel</h1>
         <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
@@ -194,6 +192,5 @@ export default async function ExecutiveDashboardPage() {
           <Badge className="justify-center"><ShieldAlert size={15} /> Alertas antifraude</Badge>
         </div>
       </section>
-    </AppShell>
   );
 }

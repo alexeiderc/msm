@@ -77,3 +77,6 @@ temp
 .agents
 work/
 work/store
+
+.vercel
+.env*

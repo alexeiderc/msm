@@ -1,4 +1,3 @@
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { WhatsAppNumberConfig } from "@/components/dashboard/whatsapp-config";
 import { WhatsAppCartsTable } from "@/components/dashboard/whatsapp-carts-table";
@@ -10,8 +9,7 @@ export default async function AdminWhatsAppCartsPage() {
   const carts = await getAllWhatsAppCarts();
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <Badge>WhatsApp</Badge>
         <h1 className="mt-3 text-3xl font-bold">Pedidos por WhatsApp</h1>
         <p className="mt-2 text-slate-600">
@@ -26,6 +24,5 @@ export default async function AdminWhatsAppCartsPage() {
           <WhatsAppCartsTable carts={carts} />
         </div>
       </section>
-    </AppShell>
   );
 }

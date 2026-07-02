@@ -1,6 +1,5 @@
 import { Download, WalletCards } from "lucide-react";
 import Link from "next/link";
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import {
@@ -13,6 +12,7 @@ import {
   RemittancePaymentReviewForm,
   RemittanceStatusForm
 } from "@/components/dashboard/economic-forms";
+import { WalletLoadReviewButtons } from "@/components/wallet/wallet-forms";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -77,19 +77,35 @@ async function getRemittanceProofs() {
   }
 }
 
+async function getWalletLoadRequests() {
+  try {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("wallet_load_requests")
+      .select("id,load_number,status,amount,currency,country,sender_name,reference,proof_url,created_at,profiles(full_name,email)")
+      .order("created_at", { ascending: false })
+      .limit(25);
+
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export default async function EconomyDashboardPage() {
   const ledger = await getLedgerRows();
   const remittances = await getRemittances();
   const paymentProofs = await getPaymentProofs();
   const remittanceProofs = await getRemittanceProofs();
+  const walletLoadRequests = await getWalletLoadRequests();
   const remittanceVolume = remittances.reduce((sum, row) => sum + Number(row.send_amount ?? 0), 0);
   const remittancePending = remittances.filter((row) => ["pendiente_pago", "pago_recibido", "en_revision"].includes(row.status)).length;
   const paymentProofsPending = paymentProofs.filter((row) => row.status === "recibido").length;
   const remittanceProofsPending = remittanceProofs.filter((row) => row.status === "recibido").length;
+  const walletLoadsPending = walletLoadRequests.filter((row) => row.status === "pendiente_revision").length;
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <Badge>Panel economico</Badge>
@@ -116,7 +132,71 @@ export default async function EconomyDashboardPage() {
           <MetricCard label="Comprobantes ordenes" value={`${paymentProofsPending}`} detail="Recibidos sin decision" />
           <MetricCard label="Comprobantes remesa" value={`${remittanceProofsPending}`} detail="Recibidos sin decision" />
           <MetricCard label="Volumen remesas" value={`$${remittanceVolume.toFixed(2)}`} detail="Segun solicitudes recientes" />
+          <MetricCard label="Cargas Saldo MSM" value={`${walletLoadsPending}`} detail="Pendientes de revision" />
         </div>
+
+        <section className="mt-6 overflow-hidden rounded-lg border border-msm-line bg-white shadow-soft">
+          <div className="border-b border-msm-line p-4">
+            <h2 className="text-lg font-bold">Recargas de Saldo MSM</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Economia aprueba aqui las cargas. Al aprobar, el saldo se acredita y queda movimiento auditable.
+            </p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead className="bg-msm-midnight text-white">
+                <tr>
+                  <th className="p-3">Solicitud</th>
+                  <th className="p-3">Cliente</th>
+                  <th className="p-3">Estado</th>
+                  <th className="p-3">Monto</th>
+                  <th className="p-3">Pais</th>
+                  <th className="p-3">Enviado por</th>
+                  <th className="p-3">Referencia</th>
+                  <th className="p-3">Comprobante</th>
+                  <th className="p-3">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {walletLoadRequests.length ? walletLoadRequests.map((row) => {
+                  const profile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+
+                  return (
+                    <tr key={row.id} className="border-t border-msm-line">
+                      <td className="p-3">
+                        <p className="font-semibold">{row.load_number}</p>
+                        <p className="text-xs text-slate-500">{new Date(row.created_at).toLocaleString("es-US")}</p>
+                      </td>
+                      <td className="p-3">
+                        <p className="font-semibold">{profile?.full_name ?? "Cliente MSM"}</p>
+                        <p className="text-xs text-slate-500">{profile?.email ?? ""}</p>
+                      </td>
+                      <td className="p-3">{row.status}</td>
+                      <td className="p-3">${Number(row.amount).toFixed(2)} {row.currency}</td>
+                      <td className="p-3">{row.country}</td>
+                      <td className="p-3">{row.sender_name}</td>
+                      <td className="p-3">{row.reference}</td>
+                      <td className="p-3">
+                        {row.proof_url ? (
+                          <a href={row.proof_url} target="_blank" className="font-bold text-msm-blue" rel="noreferrer">
+                            Ver
+                          </a>
+                        ) : "Pendiente"}
+                      </td>
+                      <td className="p-3">
+                        <WalletLoadReviewButtons requestId={row.id} />
+                      </td>
+                    </tr>
+                  );
+                }) : (
+                  <tr className="border-t border-msm-line">
+                    <td className="p-3 text-slate-600" colSpan={9}>Sin solicitudes de Saldo MSM todavia.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <section className="mt-6 overflow-hidden rounded-lg border border-msm-line bg-white shadow-soft">
           <div className="border-b border-msm-line p-4">
@@ -334,6 +414,5 @@ export default async function EconomyDashboardPage() {
           <RemittanceStatusForm />
         </div>
       </section>
-    </AppShell>
   );
 }

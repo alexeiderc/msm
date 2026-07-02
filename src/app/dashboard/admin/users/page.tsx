@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Search, UserCog } from "lucide-react";
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -37,8 +36,7 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
   const users = await getUsers(params);
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <Badge>Usuarios</Badge>
         <div className="mt-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
@@ -138,6 +136,5 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
           </table>
         </div>
       </section>
-    </AppShell>
   );
 }

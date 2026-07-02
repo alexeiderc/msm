@@ -188,84 +188,116 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       : productRelations.categories?.base_commission ?? 6
   );
   const subtotal = Number((Number(product.price) * quantity).toFixed(2));
+  const msmCommission = Number((subtotal * (commissionRate / 100)).toFixed(2));
+  let gatewayCommission = 0;
+  let account: { id: string; daily_limit?: number | string; received_today?: number | string; status?: string } | null = null;
+  let walletBeforeBalance = 0;
+  const paymentMode = parsed.data.paymentMode;
 
-  const { data: method } = await admin
-    .from("payment_methods")
-    .select("id,status,type,country,currency,fee_percent")
-    .eq("id", parsed.data.paymentMethodId)
-    .single();
+  if (paymentMode === "saldo_msm") {
+    const { data: wallet } = await admin
+      .from("wallet_accounts")
+      .select("id,balance,status,risk_hold")
+      .eq("user_id", user.id)
+      .eq("currency", parsed.data.paymentCurrency)
+      .maybeSingle();
 
-  if (method?.status !== "activo") {
-    await admin.from("fraud_alerts").insert({
-      user_id: user.id,
-      type: "metodo_pausado",
-      severity: "alta",
-      message: "El comprador intento crear una orden con un metodo no activo.",
-      metadata: { paymentMethodId: parsed.data.paymentMethodId, status: method?.status }
-    });
-    await admin.from("audit_logs").insert({
-      actor_id: user.id,
-      action: "fraud.metodo_pausado",
-      entity: "payment_methods",
-      entity_id: parsed.data.paymentMethodId,
-      after: { status: method?.status }
-    });
-    return { ok: false, message: "Este metodo de pago no esta disponible ahora." };
-  }
+    if (!wallet || wallet.status !== "activa" || wallet.risk_hold) {
+      return { ok: false, message: "Tu Saldo MSM no esta activo para pagar. Revisa /wallet o contacta soporte." };
+    }
 
-  if (method.country !== parsed.data.paymentCountry || method.currency !== parsed.data.paymentCurrency) {
-    await admin.from("fraud_alerts").insert({
-      user_id: user.id,
-      type: "pais_o_moneda_no_coincide",
-      severity: "media",
-      message: "El checkout intento usar un metodo con pais o moneda diferente a lo seleccionado.",
-      metadata: {
-        methodCountry: method.country,
-        selectedCountry: parsed.data.paymentCountry,
-        methodCurrency: method.currency,
-        selectedCurrency: parsed.data.paymentCurrency
-      }
-    });
-    await admin.from("audit_logs").insert({
-      actor_id: user.id,
-      action: "fraud.pais_o_moneda_no_coincide",
-      entity: "payment_methods",
-      entity_id: parsed.data.paymentMethodId,
-      after: { country: parsed.data.paymentCountry, currency: parsed.data.paymentCurrency }
-    });
-    return { ok: false, message: "El pais o moneda no coincide con el metodo de pago elegido." };
+    walletBeforeBalance = Number(wallet.balance ?? 0);
+    if (walletBeforeBalance < subtotal) {
+      return {
+        ok: false,
+        message: `Saldo MSM insuficiente. Tienes ${walletBeforeBalance.toFixed(2)} ${parsed.data.paymentCurrency} y necesitas ${subtotal.toFixed(2)}.`
+      };
+    }
+  } else {
+    if (!parsed.data.paymentMethodId) {
+      return { ok: false, message: "Selecciona un metodo de pago manual o usa Saldo MSM." };
+    }
+
+    const { data: method } = await admin
+      .from("payment_methods")
+      .select("id,status,type,country,currency,fee_percent")
+      .eq("id", parsed.data.paymentMethodId)
+      .single();
+
+    if (method?.status !== "activo") {
+      await admin.from("fraud_alerts").insert({
+        user_id: user.id,
+        type: "metodo_pausado",
+        severity: "alta",
+        message: "El comprador intento crear una orden con un metodo no activo.",
+        metadata: { paymentMethodId: parsed.data.paymentMethodId, status: method?.status }
+      });
+      await admin.from("audit_logs").insert({
+        actor_id: user.id,
+        action: "fraud.metodo_pausado",
+        entity: "payment_methods",
+        entity_id: parsed.data.paymentMethodId,
+        after: { status: method?.status }
+      });
+      return { ok: false, message: "Este metodo de pago no esta disponible ahora." };
+    }
+
+    if (method.country !== parsed.data.paymentCountry || method.currency !== parsed.data.paymentCurrency) {
+      await admin.from("fraud_alerts").insert({
+        user_id: user.id,
+        type: "pais_o_moneda_no_coincide",
+        severity: "media",
+        message: "El checkout intento usar un metodo con pais o moneda diferente a lo seleccionado.",
+        metadata: {
+          methodCountry: method.country,
+          selectedCountry: parsed.data.paymentCountry,
+          methodCurrency: method.currency,
+          selectedCurrency: parsed.data.paymentCurrency
+        }
+      });
+      await admin.from("audit_logs").insert({
+        actor_id: user.id,
+        action: "fraud.pais_o_moneda_no_coincide",
+        entity: "payment_methods",
+        entity_id: parsed.data.paymentMethodId,
+        after: { country: parsed.data.paymentCountry, currency: parsed.data.paymentCurrency }
+      });
+      return { ok: false, message: "El pais o moneda no coincide con el metodo de pago elegido." };
+    }
+
+    gatewayCommission = Number((subtotal * (Number(method.fee_percent ?? 0) / 100)).toFixed(2));
+
+    const { data: selectedAccount } = await admin
+      .from("payment_accounts")
+      .select("id,daily_limit,received_today,status")
+      .eq("method_id", parsed.data.paymentMethodId)
+      .eq("status", "activa")
+      .order("received_today", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    account = selectedAccount;
+
+    if (account && Number(account.received_today) + subtotal > Number(account.daily_limit)) {
+      await admin.from("fraud_alerts").insert({
+        user_id: user.id,
+        type: "cuenta_supera_capacidad_diaria",
+        severity: "media",
+        message: "La cuenta de pago disponible superaria su limite diario.",
+        metadata: { accountId: account.id, subtotal, receivedToday: account.received_today }
+      });
+      await admin.from("audit_logs").insert({
+        actor_id: user.id,
+        action: "fraud.cuenta_supera_capacidad_diaria",
+        entity: "payment_accounts",
+        entity_id: account.id,
+        after: { subtotal, receivedToday: account.received_today }
+      });
+    }
   }
 
   const orderNumber = makeOrderNumber();
-  const msmCommission = Number((subtotal * (commissionRate / 100)).toFixed(2));
-  const gatewayCommission = Number((subtotal * (Number(method.fee_percent ?? 0) / 100)).toFixed(2));
   const sellerNet = Number((subtotal - msmCommission - gatewayCommission).toFixed(2));
-
-  const { data: account } = await admin
-    .from("payment_accounts")
-    .select("id,daily_limit,received_today,status")
-    .eq("method_id", parsed.data.paymentMethodId)
-    .eq("status", "activa")
-    .order("received_today", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-
-  if (account && Number(account.received_today) + subtotal > Number(account.daily_limit)) {
-    await admin.from("fraud_alerts").insert({
-      user_id: user.id,
-      type: "cuenta_supera_capacidad_diaria",
-      severity: "media",
-      message: "La cuenta de pago disponible superaria su limite diario.",
-      metadata: { accountId: account.id, subtotal, receivedToday: account.received_today }
-    });
-    await admin.from("audit_logs").insert({
-      actor_id: user.id,
-      action: "fraud.cuenta_supera_capacidad_diaria",
-      entity: "payment_accounts",
-      entity_id: account.id,
-      after: { subtotal, receivedToday: account.received_today }
-    });
-  }
 
   const { data: seller } = sellerId
     ? await admin.from("sellers").select("max_confirm_minutes").eq("id", sellerId).maybeSingle()
@@ -340,11 +372,14 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       msm_commission: msmCommission,
       gateway_commission: gatewayCommission,
       seller_net: sellerNet,
+      status: paymentMode === "saldo_msm" ? "pago_confirmado" : "pendiente_pago",
       payment_country: parsed.data.paymentCountry,
       payment_currency: parsed.data.paymentCurrency,
-      payment_method_id: parsed.data.paymentMethodId,
+      payment_method_id: paymentMode === "manual" ? parsed.data.paymentMethodId : null,
       payment_account_id: account?.id ?? null,
+      payment_mode: paymentMode,
       vip_confirm_by: vipConfirmBy,
+      vip_delivery_unlocked_at: paymentMode === "saldo_msm" ? new Date().toISOString() : null,
       legal_accepted_at: new Date().toISOString()
     })
     .select("id")
@@ -376,16 +411,65 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
   await admin.from("order_events").insert({
     order_id: order?.id,
-    status: "pendiente_pago",
+    status: paymentMode === "saldo_msm" ? "pago_confirmado" : "pendiente_pago",
     actor_id: user.id,
-      note: "Orden creada desde checkout publico.",
+      note: paymentMode === "saldo_msm"
+        ? "Orden pagada con Saldo MSM desde checkout publico."
+        : "Orden creada desde checkout publico.",
       metadata: {
         productId: product.id,
-        paymentMethodId: parsed.data.paymentMethodId,
+        paymentMode,
+        paymentMethodId: paymentMode === "manual" ? parsed.data.paymentMethodId : null,
         paymentAccountId: account?.id ?? null,
         customerRisk
       }
   });
+
+  if (paymentMode === "saldo_msm") {
+    const { data: wallet } = await admin
+      .from("wallet_accounts")
+      .select("id,balance")
+      .eq("user_id", user.id)
+      .eq("currency", parsed.data.paymentCurrency)
+      .maybeSingle();
+
+    if (wallet) {
+      const nextBalance = Number(wallet.balance ?? walletBeforeBalance) - subtotal;
+      await admin
+        .from("wallet_accounts")
+        .update({ balance: Number(nextBalance.toFixed(2)), updated_at: new Date().toISOString() })
+        .eq("id", wallet.id);
+
+      const { data: walletTransaction } = await admin
+        .from("wallet_transactions")
+        .insert({
+          wallet_id: wallet.id,
+          user_id: user.id,
+          type: "debito",
+          status: "confirmado",
+          amount: subtotal,
+          currency: parsed.data.paymentCurrency,
+          reference_type: "order",
+          reference_id: order.id,
+          note: `Pago con Saldo MSM para orden ${orderNumber}`,
+          metadata: { orderNumber, sellerId, storeId: product.store_id }
+        })
+        .select("id")
+        .single();
+
+      if (walletTransaction?.id) {
+        await admin.from("orders").update({ wallet_transaction_id: walletTransaction.id }).eq("id", order.id);
+      }
+
+      await admin.from("wallet_score_events").insert({
+        user_id: user.id,
+        source: "saldo_msm",
+        event_type: "compra_pagada",
+        points: 2,
+        metadata: { orderId: order.id, orderNumber, amount: subtotal }
+      });
+    }
+  }
 
   revalidatePath("/orders");
   revalidatePath("/dashboard/economic");
@@ -399,7 +483,13 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     orderId: order.id
   });
 
-  return { ok: true, message: "Orden creada. Pendiente de confirmacion de pago.", orderNumber };
+  return {
+    ok: true,
+    message: paymentMode === "saldo_msm"
+      ? "Orden creada y pagada con Saldo MSM. El VIP ya puede confirmar disponibilidad."
+      : "Orden creada. Pendiente de confirmacion de pago.",
+    orderNumber
+  };
 }
 
 export async function updateVipOrderStatus(formData: FormData) {

@@ -9,7 +9,8 @@ const protectedRoutes: Record<string, UserRole[]> = {
   "/dashboard/economico": ["administrador_economico", "superadmin"],
   "/dashboard/don-miguel": ["administrador", "administrador_economico", "superadmin"],
   "/dashboard": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"],
-  "/account": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]
+  "/account": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"],
+  "/wallet": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]
 };
 
 function hasRealSupabaseConfig() {
@@ -109,5 +110,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/", "/products/:path*", "/dashboard/:path*", "/account", "/account/:path*", "/marketplace/:path*"]
+  matcher: ["/", "/products/:path*", "/dashboard/:path*", "/account", "/account/:path*", "/wallet", "/wallet/:path*", "/marketplace/:path*"]
 };

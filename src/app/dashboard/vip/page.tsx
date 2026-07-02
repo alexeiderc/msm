@@ -1,6 +1,5 @@
   import { Clock, Eye, EyeOff, Package } from "lucide-react";
 import Link from "next/link";
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import {
@@ -142,8 +141,7 @@ export default async function VipDashboardPage() {
   const firstStore = Array.isArray(vipProfile?.stores) ? vipProfile?.stores[0] : vipProfile?.stores;
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <Badge className="border-blue-200 text-msm-blue">Panel vendedor VIP</Badge>
@@ -381,6 +379,5 @@ export default async function VipDashboardPage() {
           <SellerAgreementForm />
         </section>
       </section>
-    </AppShell>
   );
 }

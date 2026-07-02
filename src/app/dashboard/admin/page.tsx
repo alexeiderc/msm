@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ArrowRightLeft, Ban, ClipboardCheck, Eye, FileWarning, Percent, QrCode, ShoppingBag, UserCheck, UsersRound, WalletCards } from "lucide-react";
-import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";
 import {
@@ -115,8 +114,7 @@ export default async function AdminDashboardPage() {
     : sellerApplications.map(([title, status, categories]) => ({ id: "", title, status, categories }));
 
   return (
-    <AppShell>
-      <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
+    <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
         <Badge>Panel administrador</Badge>
         <h1 className="mt-3 text-3xl font-bold">Confianza, cumplimiento y auditoria</h1>
 
@@ -359,6 +357,5 @@ export default async function AdminDashboardPage() {
           <ReassignOrderForm />
         </section>
       </section>
-    </AppShell>
   );
 }

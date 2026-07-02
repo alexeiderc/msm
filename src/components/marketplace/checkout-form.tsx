@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useEffect, useState as useReactState } from "react";
-import { FileCheck, LockKeyhole, MapPin } from "lucide-react";
+import { FileCheck, LockKeyhole, MapPin, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { createCheckoutOrder, createBatchCheckoutOrders, type ActionState } from "@/server/actions/orders";
@@ -27,6 +27,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const [province, setProvince] = useReactState("Santiago de Cuba");
   const [municipality, setMunicipality] = useReactState("Segundo Frente");
+  const [paymentMode, setPaymentMode] = useReactState<"saldo_msm" | "manual">("saldo_msm");
   const municipalities = getMunicipalitiesForProvince(province);
 
   useEffect(() => {
@@ -110,10 +111,42 @@ export function CheckoutForm({ productId }: { productId?: string }) {
         </label>
 
         <div className="rounded-lg border border-msm-line bg-slate-50 p-4">
-          <h2 className="text-base font-bold">Metodo de pago manual</h2>
+          <h2 className="flex items-center gap-2 text-base font-bold">
+            <WalletCards size={18} /> Pago dentro de MSM
+          </h2>
           <p className="mt-1 text-sm text-slate-600">
-            Aqui solo se muestra el metodo. La cuenta exacta se entrega dentro de la orden creada.
+            El metodo principal es Saldo MSM. Los metodos externos se usan para cargar saldo y Economia los aprueba.
           </p>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold">
+              <input
+                className="mr-2"
+                type="radio"
+                name="paymentMode"
+                value="saldo_msm"
+                checked={paymentMode === "saldo_msm"}
+                onChange={() => setPaymentMode("saldo_msm")}
+              />
+              Pagar con Saldo MSM
+              <span className="mt-1 block text-xs font-normal text-slate-500">
+                Se descuenta automaticamente si tienes saldo suficiente.
+              </span>
+            </label>
+            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold">
+              <input
+                className="mr-2"
+                type="radio"
+                name="paymentMode"
+                value="manual"
+                checked={paymentMode === "manual"}
+                onChange={() => setPaymentMode("manual")}
+              />
+              Pago manual por orden
+              <span className="mt-1 block text-xs font-normal text-slate-500">
+                Alternativa beta: se crea pendiente hasta que Economia apruebe.
+              </span>
+            </label>
+          </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <label className="space-y-1 text-sm font-semibold">
               Pais
@@ -137,7 +170,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
             </label>
             <label className="space-y-1 text-sm font-semibold">
               Metodo
-              <Select name="paymentMethodId" required>
+              <Select name="paymentMethodId" required={paymentMode === "manual"}>
                 <option value="">Seleccionar</option>
                 <option value="00000000-0000-4000-8000-000000000501">Zelle activo</option>
                 <option value="00000000-0000-4000-8000-000000000502">USDT activo</option>
