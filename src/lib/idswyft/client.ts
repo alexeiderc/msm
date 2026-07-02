@@ -2,9 +2,9 @@ const IDSWYFT_API_URL = process.env.IDSWYFT_API_URL || "http://localhost:3000";
 const IDSWYFT_API_KEY = process.env.IDSWYFT_API_KEY || "";
 
 export type IdswyftSessionResult = {
-  session_id: string;
+  verification_id: string;
   verification_url: string;
-  expires_at: string;
+  session_token: string;
 };
 
 export type IdswyftVerificationStatus =
@@ -14,50 +14,30 @@ export type IdswyftVerificationStatus =
   | "failed"
   | "manual_review";
 
-export type IdswyftVerificationResult = {
+export type IdswyftWebhookPayload = {
+  event?: string;
+  user_id: string;
+  verification_id: string;
   status: IdswyftVerificationStatus;
-  decision: "verified" | "failed" | "manual_review";
-  scores: {
-    document: number;
-    liveness: number;
-    face_match: number;
-    cross_validation: number;
-    tamper: number;
-  };
-  document: {
-    type: string;
-    country: string;
-    number_last4: string;
-    full_name: string;
-    dob: string;
-    expiry: string;
-  };
-  face: {
-    match_score: number;
-    liveness_score: number;
-    anti_spoof_score: number;
-  };
-  fraud: {
-    aml_hits: string[];
-    sanctions_hits: string[];
-    pep_hits: string[];
+  timestamp: string;
+  data?: {
+    ocr_data?: Record<string, unknown>;
+    face_match_score?: number;
+    failure_reason?: string;
+    manual_review_reason?: string;
   };
 };
 
 export async function createIdswyftSession(userId: string, returnUrl: string): Promise<IdswyftSessionResult> {
-  const res = await fetch(`${IDSWYFT_API_URL}/v2/verify/initialize`, {
+  const res = await fetch(`${IDSWYFT_API_URL}/api/v2/verify/initialize`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-api-key": IDSWYFT_API_KEY,
+      "X-API-Key": IDSWYFT_API_KEY,
     },
     body: JSON.stringify({
-      customer_id: userId,
-      return_to: returnUrl,
-      document_types: ["PASSPORT", "DL", "ID"],
-      callbacks: {
-        webhook_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/kyc/idswyft-webhook`,
-      },
+      user_id: userId,
+      redirect_url: returnUrl,
     }),
   });
 
@@ -69,10 +49,13 @@ export async function createIdswyftSession(userId: string, returnUrl: string): P
   return res.json();
 }
 
-export async function getIdswyftVerification(sessionId: string): Promise<IdswyftVerificationResult> {
-  const res = await fetch(`${IDSWYFT_API_URL}/v2/verify/${sessionId}/result`, {
+export async function getIdswyftVerification(verificationId: string): Promise<{
+  status: IdswyftVerificationStatus;
+  data?: { ocr_data?: Record<string, unknown>; face_match_score?: number };
+}> {
+  const res = await fetch(`${IDSWYFT_API_URL}/api/v2/verify/${verificationId}/status`, {
     headers: {
-      "x-api-key": IDSWYFT_API_KEY,
+      "X-API-Key": IDSWYFT_API_KEY,
     },
   });
 

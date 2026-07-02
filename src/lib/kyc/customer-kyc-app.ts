@@ -4,7 +4,7 @@ export type CustomerKycAppSession = {
   enabled: boolean;
   provider: string;
   url: string | null;
-  sessionId?: string;
+  verificationId?: string;
 };
 
 export async function getCustomerKycAppSession(userId?: string | null): Promise<CustomerKycAppSession> {
@@ -18,7 +18,7 @@ export async function getCustomerKycAppSession(userId?: string | null): Promise<
         enabled: true,
         provider: "idswyft",
         url: session.verification_url,
-        sessionId: session.session_id,
+        verificationId: session.verification_id,
       };
     } catch {
       return { enabled: false, provider: "idswyft_error", url: null };

@@ -1,20 +1,20 @@
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { CustomerKycForm } from "@/components/forms/customer-kyc-form";
-import { getCustomerKycAppSession } from "@/lib/kyc/customer-kyc-app";
+import { IdswyftKycButton } from "@/components/forms/idswyft-kyc-button";
+import { isIdswyftConfigured } from "@/lib/idswyft/client";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
 async function getProfile() {
   try {
     const supabase = await createClient();
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
 
-    if (!user) return { profile: null, kycApp: await getCustomerKycAppSession(null) };
+    if (!user) return { profile: null, userId: null };
 
     const admin = createAdminClient();
     const { data } = await admin
@@ -23,14 +23,16 @@ async function getProfile() {
       .eq("id", user.id)
       .maybeSingle();
 
-    return { profile: data, kycApp: await getCustomerKycAppSession(user.id) };
+    return { profile: data, userId: user.id };
   } catch {
-    return { profile: null, kycApp: await getCustomerKycAppSession(null) };
+    return { profile: null, userId: null };
   }
 }
 
 export default async function CustomerKycPage() {
-  const { profile, kycApp } = await getProfile();
+  const { profile } = await getProfile();
+  const idswyftAvailable = isIdswyftConfigured();
+  const kycStatus = profile?.customer_kyc_status;
 
   return (
     <AppShell>
@@ -42,20 +44,24 @@ export default async function CustomerKycPage() {
             Guarda los datos que MSM usa para validar identidad, metodo de pago, trazabilidad de pedidos y
             proteccion contra contracargos o reclamaciones maliciosas.
           </p>
-          <div className="mt-4 rounded-lg border border-blue-100 bg-blue-50 p-4 text-sm leading-6 text-msm-ink">
-            <p className="font-bold">App KYC cliente</p>
-            {kycApp.enabled && kycApp.url ? (
-              <a href={kycApp.url} className="mt-2 inline-flex font-bold text-msm-blue underline" target="_blank" rel="noreferrer">
-                Abrir verificacion externa
-              </a>
-            ) : (
-              <p className="mt-1">
-                En localhost queda en modo manual MSM. En produccion se conecta con `KYC_CUSTOMER_APP_URL`
-                para abrir una app externa de verificacion.
-              </p>
-            )}
-          </div>
         </div>
+
+        <div className="grid gap-3 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+          <div>
+            <h2 className="flex items-center gap-2 text-lg font-bold">
+              <ShieldCheck size={20} className="text-msm-blue" />
+              Estado KYC
+            </h2>
+          </div>
+          <div className="grid gap-2 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm">
+            <span className="font-bold">Estado: {kycStatus ?? "pendiente"}</span>
+            <span>Riesgo: {profile?.customer_risk_level ?? "normal"}</span>
+            <span>Metodo de pago validado: {profile?.payment_method_valid ? "si" : "pendiente"}</span>
+          </div>
+
+          {idswyftAvailable && <IdswyftKycButton kycStatus={kycStatus} />}
+        </div>
+
         <CustomerKycForm profile={profile} />
       </section>
     </AppShell>
