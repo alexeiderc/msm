@@ -14,7 +14,7 @@ async function getProfile() {
       data: { user }
     } = await supabase.auth.getUser();
 
-    if (!user) return { profile: null, kycApp: getCustomerKycAppSession(null) };
+    if (!user) return { profile: null, kycApp: await getCustomerKycAppSession(null) };
 
     const admin = createAdminClient();
     const { data } = await admin
@@ -23,9 +23,9 @@ async function getProfile() {
       .eq("id", user.id)
       .maybeSingle();
 
-    return { profile: data, kycApp: getCustomerKycAppSession(user.id) };
+    return { profile: data, kycApp: await getCustomerKycAppSession(user.id) };
   } catch {
-    return { profile: null, kycApp: getCustomerKycAppSession(null) };
+    return { profile: null, kycApp: await getCustomerKycAppSession(null) };
   }
 }
 

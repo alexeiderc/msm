@@ -27,6 +27,7 @@ type CustomerKycFormProps = {
 
 export function CustomerKycForm({ profile }: CustomerKycFormProps) {
   const [state, formAction, pending] = useActionState(updateCustomerKyc, emptyActionResult);
+  const isRejected = profile?.customer_kyc_status === "rechazado";
 
   return (
     <form action={formAction} className="grid gap-3 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
@@ -38,7 +39,13 @@ export function CustomerKycForm({ profile }: CustomerKycFormProps) {
         </p>
       </div>
 
-      <div className="grid gap-3 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm text-msm-ink">
+      <div className={"grid gap-3 rounded-md border p-3 text-sm " + (isRejected ? "border-red-200 bg-red-50 text-red-800" : "border-blue-100 bg-blue-50 text-msm-ink")}>
+        {isRejected && (
+          <div className="mb-2 flex items-start gap-2 rounded-md border border-red-200 bg-white p-3 text-sm">
+            <AlertTriangle className="mt-0.5 shrink-0 text-red-600" size={18} />
+            <span>Tu KYC fue rechazado. Corrige los datos y vuelve a enviar.</span>
+          </div>
+        )}
         <span className="font-bold">Estado KYC: {profile?.customer_kyc_status ?? "pendiente"}</span>
         <span>Riesgo: {profile?.customer_risk_level ?? "normal"}</span>
         <span>Metodo de pago validado por MSM: {profile?.payment_method_valid ? "si" : "pendiente"}</span>

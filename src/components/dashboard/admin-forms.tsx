@@ -14,6 +14,7 @@ import {
   reviewSellerApplication,
   updateSellerCommission
 } from "@/server/actions/admin";
+import { reviewSellerKyc } from "@/server/actions/sellers";
 import { emptyActionResult, type ActionResult } from "@/types/actions";
 
 function ActionMessage({ state }: { state: ActionResult }) {
@@ -187,6 +188,28 @@ export function ReviewCustomerKycForm() {
       <Button type="submit" disabled={pending} className="bg-msm-blue">
         <UserCheck size={17} />
         {pending ? "Guardando..." : "Guardar KYC cliente"}
+      </Button>
+    </form>
+  );
+}
+
+export function ReviewSellerKycForm() {
+  const [state, formAction, pending] = useActionState(reviewSellerKyc, emptyActionResult);
+
+  return (
+    <form action={formAction} className="mt-4 grid gap-3 rounded-lg border border-msm-line p-4">
+      <h3 className="font-bold">Revisar KYC vendedor</h3>
+      <Input name="sellerId" placeholder="ID vendedor" required />
+      <Select name="status" defaultValue="pendiente">
+        <option value="pendiente">pendiente</option>
+        <option value="aprobado">aprobado</option>
+        <option value="rechazado">rechazado</option>
+      </Select>
+      <Textarea name="adminNote" placeholder="Nota de la revision" />
+      <ActionMessage state={state} />
+      <Button type="submit" disabled={pending} className="bg-msm-blue">
+        <UserCheck size={17} />
+        {pending ? "Guardando..." : "Guardar revision KYC"}
       </Button>
     </form>
   );

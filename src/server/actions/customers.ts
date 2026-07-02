@@ -48,6 +48,15 @@ export async function updateCustomerKyc(_: ActionResult, formData: FormData): Pr
   const riskLevel = paymentOwnerMatches ? "normal" : "revision";
   const acceptedAt = new Date().toISOString();
 
+  const { data: currentProfile } = await admin
+    .from("profiles")
+    .select("customer_kyc_status, account_hold_reason")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const isRejectedKyc = currentProfile?.customer_kyc_status === "rechazado";
+  const newStatus = isRejectedKyc ? "pendiente" : "requiere_revision";
+
   const { error } = await admin
     .from("profiles")
     .update({
@@ -56,7 +65,7 @@ export async function updateCustomerKyc(_: ActionResult, formData: FormData): Pr
       country: parsed.data.country,
       address: parsed.data.address,
       payment_method_valid: Boolean(existingProfile?.payment_method_valid),
-      customer_kyc_status: "requiere_revision",
+      customer_kyc_status: newStatus,
       customer_risk_level: riskLevel,
       identity_document_type: parsed.data.identityDocumentType,
       identity_document_last4: parsed.data.identityDocumentLast4.toUpperCase(),

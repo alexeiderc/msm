@@ -9,6 +9,7 @@ import {
   ReassignOrderForm,
   ReviewCustomerKycForm,
   ReviewSellerApplicationForm,
+  ReviewSellerKycForm,
   SellerCommissionForm
 } from "@/components/dashboard/admin-forms";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -336,6 +337,14 @@ export default async function AdminDashboardPage() {
             ))}
           </div>
           <ReviewSellerApplicationForm />
+        </section>
+
+        <section className="mt-6 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+          <h2 className="text-lg font-bold">KYC vendedores</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Revision de documentos, video y referencias comunitarias de vendedores VIP.
+          </p>
+          <ReviewSellerKycForm />
         </section>
 
         <section className="mt-6 rounded-lg border border-msm-line bg-white p-4 shadow-soft">

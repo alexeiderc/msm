@@ -350,6 +350,12 @@ export const customerKycReviewSchema = z.object({
   decisionNote: z.string().max(700).optional()
 });
 
+export const sellerKycReviewSchema = z.object({
+  sellerId: z.string().uuid(),
+  status: z.enum(["pendiente", "aprobado", "rechazado"]),
+  adminNote: z.string().max(700).optional()
+});
+
 export const sellerReviewSchema = z.object({
   sellerId: z.string().uuid(),
   orderId: z.string().uuid().optional().or(z.literal("")),
