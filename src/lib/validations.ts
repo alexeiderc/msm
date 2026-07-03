@@ -50,7 +50,6 @@ export const signupSchema = z.object({
   termsAccepted: z.literal("on", {
     message: "Debes aceptar los terminos para crear cuenta."
   }),
-  roleIntent: z.enum(["cliente", "vendedor_vip"]).default("cliente"),
   next: z.string().optional()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Las contrasenas no coinciden.",

@@ -82,15 +82,11 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
     email: parsed.data.email,
     password: parsed.data.password,
     options: {
-      emailRedirectTo:
-        parsed.data.roleIntent === "vendedor_vip"
-          ? authCallbackUrl("/vendedores/solicitud")
-          : authCallbackUrl("/account/kyc"),
+      emailRedirectTo: authCallbackUrl("/account/kyc"),
       data: {
         full_name: parsed.data.fullName,
         phone: parsed.data.phone,
         country: parsed.data.country,
-        role_intent: parsed.data.roleIntent
       }
     }
   });
@@ -120,19 +116,17 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
         action: "profile.signup",
         entity: "profiles",
         entity_id: data.user.id,
-        after: { email: parsed.data.email, roleIntent: parsed.data.roleIntent }
+        after: { email: parsed.data.email }
       });
     } catch {
       // En local puede no existir service role. Supabase Auth mantiene la cuenta creada.
     }
   }
 
-  const nextStep =
-    parsed.data.roleIntent === "vendedor_vip"
-      ? " Cuenta creada. Ahora puedes completar la solicitud VIP en /vendedores/solicitud."
-      : " Cuenta creada. Ahora puedes validar tus datos en /account/kyc y seguir tus ordenes en /orders.";
-
-  return { ok: true, message: `Listo. Revisa tu correo si Supabase pide confirmacion.${nextStep}` };
+  return {
+    ok: true,
+    message: "Listo. Revisa tu correo si Supabase pide confirmacion. Cuenta creada. Ahora puedes validar tus datos en /account/kyc y seguir tus ordenes en /orders."
+  };
 }
 
 export async function requestPasswordReset(_: ActionResult, formData: FormData): Promise<ActionResult> {
