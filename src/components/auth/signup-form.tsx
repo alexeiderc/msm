@@ -77,7 +77,7 @@ export function SignupForm({ next }: { next?: string }) {
           >
             {countries.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.flag} {c.name}
+                {c.name}
               </option>
             ))}
           </select>
