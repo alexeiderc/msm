@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
   const ocrData = payload.data?.ocr_data;
   const faceMatchScore = payload.data?.face_match_score;
 
-  const kycStatus = status === "verified" ? "aprobado" : status === "failed" ? "rechazado" : "requiere_revision";
+  const kycStatus = "requiere_revision";
 
   await admin.from("profiles").update({
     customer_kyc_status: kycStatus,
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     after: { kycStatus, provider: "idswyft", verificationId: payload.verification_id },
   });
 
-  if (kycStatus === "aprobado" || kycStatus === "rechazado") {
+  if (status === "failed") {
     const { data: profile } = await admin
       .from("profiles")
       .select("email, phone, full_name")
@@ -84,11 +84,11 @@ export async function POST(request: NextRequest) {
     if (profile) {
       notifyKycStatusChange({
         userId,
-        status: kycStatus,
+        status: "rechazado",
         email: profile.email,
         phone: profile.phone,
         fullName: profile.full_name,
-        reason: payload.data?.failure_reason ?? null,
+        reason: payload.data?.failure_reason ?? "KYC rechazado por Idswyft",
       }).catch(() => {});
     }
   }

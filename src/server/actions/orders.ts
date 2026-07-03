@@ -64,14 +64,6 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     };
   }
 
-  if (customerProfile?.customer_kyc_status !== "aprobado") {
-    return {
-      ok: false,
-      message:
-        "Tu KYC debe estar aprobado para poder crear ordenes. Completalo en /account/kyc."
-    };
-  }
-
   const [{ count: pendingOrderCount }, { count: fraudAlertCount }] = await Promise.all([
     admin
       .from("orders")
@@ -834,8 +826,8 @@ export async function createBatchCheckoutOrders(_: ActionResult, formData: FormD
     return { ok: false, message: "Antes de pagar debes completar KYC de cliente en /account/kyc." };
   }
 
-  if (customerProfile?.customer_kyc_status !== "aprobado") {
-    return { ok: false, message: "Tu KYC debe estar aprobado para poder crear ordenes. Completalo en /account/kyc." };
+  if (customerProfile?.customer_kyc_status === "rechazado" || customerProfile?.customer_risk_level === "bloqueado") {
+    return { ok: false, message: "Esta cuenta necesita revision de MSM antes de crear nuevas ordenes." };
   }
 
   const orderNumbers: string[] = [];
