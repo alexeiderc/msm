@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { AlertTriangle, ShieldCheck } from "lucide-react";
+import { AlertTriangle, FileText, ShieldCheck, UserRound, WalletCards } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input, Select, Textarea } from "@/components/ui/input";
 import { updateCustomerKyc } from "@/server/actions/customers";
@@ -25,36 +25,48 @@ type CustomerKycFormProps = {
   } | null;
 };
 
+function SectionHeader({ icon: Icon, label }: { icon: React.ComponentType<{ size?: number; className?: string }>; label: string }) {
+  return (
+    <div className="col-span-full flex items-center gap-2 border-b border-msm-line pb-2">
+      <Icon size={18} className="text-msm-blue" />
+      <span className="text-sm font-bold uppercase tracking-wider text-slate-600">{label}</span>
+    </div>
+  );
+}
+
 export function CustomerKycForm({ profile }: CustomerKycFormProps) {
   const [state, formAction, pending] = useActionState(updateCustomerKyc, emptyActionResult);
   const isRejected = profile?.customer_kyc_status === "rechazado";
 
   return (
-    <form action={formAction} className="grid gap-3 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
-      <div>
-        <h2 className="text-lg font-bold">KYC del cliente</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          MSM usa esta verificacion para reducir pagos desconocidos, reclamos falsos, contracargos y abuso
-          despues de la entrega.
-        </p>
-      </div>
-
-      <div className={"grid gap-3 rounded-md border p-3 text-sm " + (isRejected ? "border-red-200 bg-red-50 text-red-800" : "border-blue-100 bg-blue-50 text-msm-ink")}>
-        {isRejected && (
-          <div className="mb-2 flex items-start gap-2 rounded-md border border-red-200 bg-white p-3 text-sm">
-            <AlertTriangle className="mt-0.5 shrink-0 text-red-600" size={18} />
-            <span>Tu KYC fue rechazado. Corrige los datos y vuelve a enviar.</span>
+    <form action={formAction} className="grid gap-5">
+      {isRejected && (
+        <div className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 shrink-0 text-red-600" size={20} />
+          <div>
+            <p className="font-bold text-red-800">KYC rechazado anteriormente</p>
+            <p className="mt-1 text-red-700">Corrige los datos y vuelve a enviar el formulario.</p>
           </div>
-        )}
-        <span className="font-bold">Estado KYC: {profile?.customer_kyc_status ?? "pendiente"}</span>
-        <span>Riesgo: {profile?.customer_risk_level ?? "normal"}</span>
-        <span>Metodo de pago validado por MSM: {profile?.payment_method_valid ? "si" : "pendiente"}</span>
-      </div>
+        </div>
+      )}
 
-      <div className="grid gap-3 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
+        <SectionHeader icon={UserRound} label="Datos personales" />
         <Input name="fullName" placeholder="Nombre completo legal" defaultValue={profile?.full_name ?? ""} required />
         <Input name="phone" placeholder="Telefono / WhatsApp" defaultValue={profile?.phone ?? ""} required />
         <Input name="country" placeholder="Pais donde resides" defaultValue={profile?.country ?? "Estados Unidos"} required />
+        <div className="md:col-span-2">
+          <Textarea
+            name="address"
+            placeholder="Direccion principal del comprador"
+            defaultValue={profile?.address ?? ""}
+            required
+          />
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <SectionHeader icon={FileText} label="Documento de identidad" />
         <Select name="identityDocumentType" defaultValue={profile?.identity_document_type ?? "licencia"}>
           <option value="licencia">Licencia de conducir</option>
           <option value="pasaporte">Pasaporte</option>
@@ -63,10 +75,14 @@ export function CustomerKycForm({ profile }: CustomerKycFormProps) {
         </Select>
         <Input
           name="identityDocumentLast4"
-          placeholder="Ultimos caracteres del documento"
+          placeholder="Ultimos 4 caracteres del numero de documento"
           defaultValue={profile?.identity_document_last4 ?? ""}
           required
         />
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <SectionHeader icon={WalletCards} label="Metodo de pago" />
         <Input
           name="paymentAppName"
           placeholder="App de pago usada: Zelle, CashApp, PayPal..."
@@ -80,52 +96,44 @@ export function CustomerKycForm({ profile }: CustomerKycFormProps) {
         />
         <Input
           name="kycProviderReference"
-          placeholder="Referencia app KYC externa, si existe"
+          placeholder="Referencia de verificacion externa (si aplica)"
           defaultValue={profile?.kyc_provider_reference ?? ""}
         />
       </div>
 
-      <Textarea
-        name="address"
-        placeholder="Direccion principal del comprador"
-        defaultValue={profile?.address ?? ""}
-        required
-      />
-      <Textarea
-        name="identityNote"
-        placeholder="Nota opcional: metodo usado, aclaracion del documento o explicacion si paga otra persona"
-      />
+      <div className="grid gap-4">
+        <SectionHeader icon={ShieldCheck} label="Notas y seguridad" />
+        <Textarea
+          name="identityNote"
+          placeholder="Nota opcional: aclara si usaste otro metodo, pagas desde otra cuenta o necesitas que MSM sepa algo sobre tu verificacion."
+        />
+      </div>
 
-      <label className="flex items-start gap-3 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm font-semibold text-amber-900">
+      <label className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold leading-6 text-amber-900 transition hover:border-amber-300">
         <input
           name="chargebackPolicyAccepted"
           type="checkbox"
           required
           defaultChecked={Boolean(profile?.chargeback_policy_accepted_at)}
-          className="mt-1 h-5 w-5 accent-msm-blue"
+          className="mt-1 h-5 w-5 shrink-0 accent-msm-blue"
         />
-        Acepto que despues de recibir producto, servicio o remesa, una reclamacion falsa, contracargo indebido,
-        desconocimiento malicioso del pago o datos falsos puede causar bloqueo de cuenta, investigacion,
-        cancelacion de ordenes y registro antifraude.
+        <span>
+          Acepto que despues de recibir producto, servicio o remesa, una reclamacion falsa, contracargo indebido,
+          desconocimiento malicioso del pago o datos falsos puede causar bloqueo de cuenta, investigacion,
+          cancelacion de ordenes y registro antifraude.
+        </span>
       </label>
 
-      {!profile?.chargeback_policy_accepted_at ? (
-        <div className="flex items-start gap-2 rounded-md border border-amber-200 bg-white p-3 text-sm leading-6 text-slate-700">
-          <AlertTriangle className="mt-0.5 shrink-0 text-amber-600" size={18} />
-          <span>
-            Para operar con mas confianza, MSM debe poder relacionar el cliente, el metodo de pago y la entrega.
-          </span>
+      {state.message && (
+        <div className={"flex items-start gap-3 rounded-lg border p-4 text-sm font-semibold " + (state.ok ? "border-green-200 bg-green-50 text-green-800" : "border-red-200 bg-red-50 text-red-800")}>
+          {state.ok ? <ShieldCheck className="mt-0.5 shrink-0" size={20} /> : <AlertTriangle className="mt-0.5 shrink-0" size={20} />}
+          <span>{state.message}</span>
         </div>
-      ) : null}
+      )}
 
-      {state.message ? (
-        <p className={state.ok ? "text-sm font-semibold text-msm-blue" : "text-sm font-semibold text-red-700"}>
-          {state.message}
-        </p>
-      ) : null}
-      <Button type="submit" disabled={pending} className="bg-msm-blue">
-        <ShieldCheck size={17} />
-        {pending ? "Guardando..." : "Guardar KYC"}
+      <Button type="submit" disabled={pending} className="w-full gap-3 bg-gradient-to-r from-msm-blue to-msm-electric py-3 text-base shadow-glow">
+        <ShieldCheck size={20} />
+        {pending ? "Guardando informacion..." : "Guardar y enviar KYC"}
       </Button>
     </form>
   );
