@@ -42,7 +42,7 @@ const panelLinks = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-msm-cloud">
-      <header className="sticky top-0 z-30 border-b border-slate-200/80 bg-white/92 text-msm-ink shadow-[0_8px_28px_rgba(7,17,30,0.06)] backdrop-blur">
+      <header className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/92 text-msm-ink shadow-[0_8px_28px_rgba(7,17,30,0.06)] backdrop-blur md:block">
         <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-4">
           <div className="flex items-center gap-2.5">
             <Link href="/" className="flex shrink-0 items-center gap-3 font-bold text-white" aria-label="MSM my store inicio">
@@ -89,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main>{children}</main>
-      <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8">
+      <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8 md:pt-8">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
             <Image
@@ -127,17 +127,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
-      <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-slate-200 bg-white/96 text-msm-ink shadow-[0_-12px_36px_rgba(7,17,30,0.10)] backdrop-blur md:hidden">
-        {navItems.filter(([, href]) => ["/", "/products", "/remittances", "/atm", "/eliana"].includes(href)).map(([label, href, Icon]) => (
-          <Link key={href} href={href} className="flex min-h-[64px] flex-col items-center justify-center gap-1 px-1 text-center text-[11px] font-bold text-slate-600 transition hover:text-msm-blue">
-            <Icon size={19} />
-            <span>{label === "YO SOY ELIANA" ? "ELIANA" : label}</span>
-          </Link>
-        ))}
-      </nav>
-      <div className="fixed bottom-[4.35rem] left-3 z-30 md:hidden">
-        <LowDataModeToggle />
-      </div>
+      {/* Mobile bottom nav removed — handled per-page via MobileBottomNav */}
       <ElianaFloatingAssistant />
     </div>
   );

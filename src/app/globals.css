@@ -120,6 +120,14 @@ html[data-lite="true"] .shadow-lift {
   }
 }
 
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes eliana-slide-in {
   from {
     opacity: 0;
