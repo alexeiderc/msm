@@ -1,4 +1,6 @@
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
+import { notifyKycStatusChange } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { IdswyftWebhookPayload } from "@/lib/idswyft/client";
 
@@ -13,8 +15,6 @@ function verifySignature(rawBody: string, signatureHeader: string | null): boole
   if (expected.length !== signatureHeader.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(signatureHeader));
 }
-
-import crypto from "crypto";
 
 export async function POST(request: NextRequest) {
   const rawBody = await request.text();
@@ -73,6 +73,25 @@ export async function POST(request: NextRequest) {
     entity_id: userId,
     after: { kycStatus, provider: "idswyft", verificationId: payload.verification_id },
   });
+
+  if (kycStatus === "aprobado" || kycStatus === "rechazado") {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("email, phone, full_name")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile) {
+      notifyKycStatusChange({
+        userId,
+        status: kycStatus,
+        email: profile.email,
+        phone: profile.phone,
+        fullName: profile.full_name,
+        reason: payload.data?.failure_reason ?? null,
+      }).catch(() => {});
+    }
+  }
 
   return NextResponse.json({ ok: true });
 }

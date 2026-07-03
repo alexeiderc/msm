@@ -1,4 +1,4 @@
-import { sendOrderReceipt } from "@/lib/email";
+import { sendOrderReceipt, sendKycNotification } from "@/lib/email";
 import { queueWhatsAppMessage } from "@/lib/whatsapp";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -56,6 +56,14 @@ function resolveTemplate(templateName: string): { subject: string; body: string 
       "payout-sent": {
         subject: "Payout enviado {{payoutId}}",
         body: "MSM registro un payout por {{amount}} para el vendedor VIP {{sellerName}}."
+      },
+      "kyc-approved": {
+        subject: "KYC aprobado — Ya puedes operar en MSM",
+        body: "Tu verificacion de identidad (KYC) fue aprobada. Ya puedes realizar compras y operar sin restricciones en MSM my store."
+      },
+      "kyc-rejected": {
+        subject: "KYC rechazado — MSM reviso tu identificacion",
+        body: "Tu verificacion de identidad (KYC) fue rechazada.{{reason}} Vuelve a intentar en /account/kyc."
       }
     };
 
@@ -208,5 +216,49 @@ export async function notifyOrderStatusChange(params: {
     title: subject,
     body,
     metadata: { order_id: params.orderId, order_number: params.orderNumber, template: mapped, status: params.status }
+  }); } catch {}
+}
+
+export async function notifyKycStatusChange(params: {
+  userId: string;
+  status: string;
+  email?: string | null;
+  phone?: string | null;
+  fullName?: string | null;
+  reason?: string | null;
+}) {
+  const templateName = params.status === "aprobado" ? "kyc-approved" : params.status === "rechazado" ? "kyc-rejected" : null;
+  if (!templateName) return;
+
+  const template = resolveTemplate(templateName);
+  if (!template) return;
+
+  const vars: Record<string, string> = { reason: params.reason ? ` Motivo: ${params.reason}` : "" };
+  const subject = substitute(template.subject, vars);
+  const body = substitute(template.body, vars);
+
+  if (params.email) {
+    await sendKycNotification({
+      to: params.email,
+      status: params.status,
+      fullName: params.fullName,
+      reason: params.reason,
+    }).catch(() => {});
+  }
+
+  if (params.phone) {
+    await queueWhatsAppMessage({
+      to: params.phone,
+      template: templateName.replace(/-/g, "_"),
+      variables: {},
+    }).catch(() => {});
+  }
+
+  try { await createAdminClient().from("notifications").insert({
+    user_id: params.userId,
+    channel: "in_app",
+    title: subject,
+    body,
+    metadata: { template: templateName, kycStatus: params.status }
   }); } catch {}
 }

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { notifyKycStatusChange } from "@/lib/notifications";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -117,6 +118,24 @@ export async function reviewCustomerKyc(_: ActionResult, formData: FormData): Pr
       decisionNote: parsed.data.decisionNote || null
     }
   });
+
+  if (parsed.data.status === "aprobado" || parsed.data.status === "rechazado") {
+    const { data: profile } = await actor.admin
+      .from("profiles")
+      .select("email,phone,full_name")
+      .eq("id", parsed.data.profileId)
+      .maybeSingle();
+    if (profile) {
+      notifyKycStatusChange({
+        userId: parsed.data.profileId,
+        status: parsed.data.status,
+        email: profile.email,
+        phone: profile.phone,
+        fullName: profile.full_name,
+        reason: parsed.data.decisionNote || null,
+      }).catch(() => {});
+    }
+  }
 
   revalidatePath("/dashboard/admin");
   revalidatePath("/account/kyc");

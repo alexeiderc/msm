@@ -2,6 +2,7 @@
 
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { notifyKycStatusChange } from "@/lib/notifications";
 import { adminUserKycSchema, adminUserRoleSchema, adminUserStatusSchema, profileUpdateSchema, securityUpdateSchema } from "@/lib/validations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -242,6 +243,25 @@ export async function updateAdminUserKyc(_: ActionResult, formData: FormData): P
       metadata: { paymentMethodValid: checkbox(parsed.data.paymentMethodValid) }
     });
     await writeAudit(user!.id, "admin.user_kyc_update", "profiles", parsed.data.userId, null, parsed.data);
+
+    if (parsed.data.status === "aprobado" || parsed.data.status === "rechazado") {
+      const { data: profile } = await admin
+        .from("profiles")
+        .select("email,phone,full_name")
+        .eq("id", parsed.data.userId)
+        .maybeSingle();
+      if (profile) {
+        notifyKycStatusChange({
+          userId: parsed.data.userId,
+          status: parsed.data.status,
+          email: profile.email,
+          phone: profile.phone,
+          fullName: profile.full_name,
+          reason: parsed.data.note || null,
+        }).catch(() => {});
+      }
+    }
+
     revalidatePath("/dashboard/admin/users");
     return { ok: true, message: "KYC administrativo actualizado." };
   } catch (error) {
