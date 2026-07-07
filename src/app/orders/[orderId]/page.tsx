@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ClipboardList, Clock, CreditCard, MapPin, Package, Phone, Truck } from "lucide-react";
+import { ArrowLeft, Clock, CreditCard, Heart, MapPin, Package, RotateCcw, Truck } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { currency } from "@/lib/utils";
+import { OrderReviewForm } from "@/components/reviews/order-review-form";
 
 export const dynamic = "force-dynamic";
 
@@ -55,11 +56,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
 
   const { data: items } = await admin
     .from("order_items")
-    .select("name,quantity,unit_price,total")
+    .select("name,quantity,unit_price,total,product_id")
     .eq("order_id", orderId);
 
   const method = Array.isArray(order.payment_methods) ? order.payment_methods[0] : order.payment_methods;
   const account = Array.isArray(order.payment_accounts) ? order.payment_accounts[0] : order.payment_accounts;
+  const canReview = order.status === "entregada" || order.status === "cerrada";
 
   return (
     <AppShell>
@@ -122,6 +124,15 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
                 )) : <p className="text-sm text-slate-600">Sin eventos registrados.</p>}
               </div>
             </article>
+
+            {canReview && items?.length ? items.map((item) => (
+              <article key={item.product_id} className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+                <h2 className="flex items-center gap-2 font-bold"><Heart size={18} /> Reseña</h2>
+                <div className="mt-3">
+                  <OrderReviewForm productId={item.product_id} productName={item.name} orderId={orderId} />
+                </div>
+              </article>
+            )) : null}
           </div>
 
           <div className="grid gap-4">
@@ -147,6 +158,19 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ or
                 </Link>
               </div>
             </article>
+
+            {canReview ? (
+              <article className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+                <h2 className="flex items-center gap-2 font-bold"><RotateCcw size={18} /> Devolucion</h2>
+                <p className="mt-2 text-sm text-slate-600">¿No estas conforme? Puedes solicitar una devolucion.</p>
+                <Link
+                  href={`/orders/${orderId}/return`}
+                  className="mt-3 inline-flex items-center gap-1.5 rounded-md bg-msm-blue px-3 py-2 text-xs font-bold text-white"
+                >
+                  <RotateCcw size={14} /> Solicitar devolucion
+                </Link>
+              </article>
+            ) : null}
 
             <article className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
               <h2 className="flex items-center gap-2 font-bold"><Truck size={18} /> Entrega</h2>

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera, ShieldCheck, UserRound } from "lucide-react";
+import { Camera, Heart, ShieldCheck, UserRound } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { AvatarUpload, ProfileForm } from "@/components/account/profile-forms";
@@ -53,9 +53,9 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
                 <UserRound className="text-msm-blue" size={22} />
                 <p className="mt-2 font-bold">Perfil</p>
               </Link>
-              <Link href="/account/security" className="rounded-lg border border-msm-line bg-white p-4 shadow-soft hover:border-msm-blue">
-                <ShieldCheck className="text-msm-blue" size={22} />
-                <p className="mt-2 font-bold">Seguridad</p>
+              <Link href="/wishlist" className="rounded-lg border border-msm-line bg-white p-4 shadow-soft hover:border-msm-blue">
+                <Heart className="text-msm-blue" size={22} />
+                <p className="mt-2 font-bold">Favoritos</p>
               </Link>
               <Link href="/account/kyc" className="rounded-lg border border-msm-line bg-white p-4 shadow-soft hover:border-msm-blue">
                 <Camera className="text-msm-blue" size={22} />

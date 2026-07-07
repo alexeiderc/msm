@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, LayoutGrid, Plus, Package, User } from "lucide-react";
+import { Heart, Home, Package, Plus, User } from "lucide-react";
 
 const items = [
   ["Inicio", "/", Home],
-  ["Categorías", "/products", LayoutGrid],
+  ["Favoritos", "/wishlist", Heart],
   ["Publicar", "/vendedores/solicitud", Plus],
   ["Órdenes", "/orders", Package],
   ["Perfil", "/account", User],
