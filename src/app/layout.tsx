@@ -24,6 +24,9 @@ try {
   var connection = navigator.connection || {};
   var lite = saved ? saved === "true" : Boolean(connection.saveData || connection.effectiveType === "slow-2g" || connection.effectiveType === "2g");
   document.documentElement.dataset.lite = String(lite);
+  var theme = localStorage.getItem("msm-theme");
+  if (theme) document.documentElement.classList.toggle("dark", theme === "dark");
+  else if (window.matchMedia("(prefers-color-scheme: dark)").matches) document.documentElement.classList.add("dark");
 } catch (_) {}
 `;
 

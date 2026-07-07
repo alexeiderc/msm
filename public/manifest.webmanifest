@@ -1,13 +1,16 @@
 {
-  "name": "MSM my store",
+  "name": "MSM MY STORE - Marketplace Cuba",
   "short_name": "MSM",
-  "description": "Plataforma MSM MY STORE para productos, remesas, pagos, billetera, vendedores VIP y Cajeros MSM Digital.",
+  "description": "Marketplace cubano: compra productos, envía remesas, paga servicios. Todo lo que deseas, aquí lo encuentras.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#07111E",
+  "background_color": "#020B2D",
   "theme_color": "#197BD2",
+  "categories": ["shopping", "business", "finance"],
+  "lang": "es",
+  "dir": "ltr",
   "icons": [
     {
       "src": "/icons/msm-icon.svg",
@@ -36,10 +39,18 @@
       "description": "Abrir billetera digital MSM."
     },
     {
+      "name": "Órdenes",
+      "short_name": "Órdenes",
+      "url": "/orders",
+      "description": "Tus órdenes activas."
+    },
+    {
       "name": "Cajeros MSM",
       "short_name": "Cajeros",
       "url": "/atm",
       "description": "Reservas y Cajeros MSM Digital."
     }
-  ]
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
 }

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Menu, Search, Bell, ShoppingCart, X } from "lucide-react";
 import { CartCount } from "@/components/cart/cart-count";
 import { ElianaDiamond } from "@/components/ai/eliana-diamond";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function MobileHeader({ onElianaOpen }: { onElianaOpen: () => void }) {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -63,6 +64,7 @@ export function MobileHeader({ onElianaOpen }: { onElianaOpen: () => void }) {
           <ElianaDiamond size={28} className="drop-shadow-lg" />
           <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border border-[#020B2D] bg-green-500" />
         </button>
+        <ThemeToggle />
         <Link
           href="/account"
           className="grid h-9 w-9 place-items-center text-white/80"

@@ -8,6 +8,17 @@
   --foreground: #14171a;
 }
 
+html.dark {
+  color-scheme: dark;
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+}
+
+html.dark body {
+  background: #0f172a;
+  color: #f1f5f9;
+}
+
 * {
   box-sizing: border-box;
 }
