@@ -21,7 +21,12 @@ import { Badge } from "@/components/ui/badge";
 import { ElianaCommandCenter } from "@/components/ai/eliana-command-center";
 import { ProductCard } from "@/components/marketplace/product-card";
 import { officialPublicProductsFallback, officialStoreSlug } from "@/lib/demo-msm-store";
-import { MobileHomeWrapper } from "@/components/mobile/mobile-home-wrapper";
+import { TrendingBar } from "@/components/mobile/trending-bar";
+import { MobileHero } from "@/components/mobile/mobile-hero";
+import { MobileCategories } from "@/components/mobile/mobile-categories";
+import { TrustBadges } from "@/components/mobile/trust-badges";
+import { ProductCarousel } from "@/components/mobile/product-carousel";
+import { VipJoinBanner } from "@/components/mobile/vip-join-banner";
 
 const featuredProducts = officialPublicProductsFallback.slice(0, 3).map((product) => ({
   ...product,
@@ -48,7 +53,13 @@ export default function Home() {
   return (
     <AppShell>
       <div className="block md:hidden">
-        <MobileHomeWrapper />
+        <TrendingBar />
+        <MobileHero />
+        <MobileCategories />
+        <TrustBadges />
+        <ProductCarousel />
+        <VipJoinBanner />
+        <div className="h-6" />
       </div>
 
       {/* Desktop view */}

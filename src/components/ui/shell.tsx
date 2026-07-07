@@ -4,6 +4,7 @@ import { Bot, CircleDollarSign, Home, PackageSearch, QrCode, Search, ShoppingCar
 import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LowDataModeToggle } from "@/components/performance/low-data-mode";
 import { CartCount } from "@/components/cart/cart-count";
+import { MobileShell } from "@/components/ui/mobile-shell";
 
 const navItems = [
   ["Inicio", "/", Home],
@@ -88,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
-      <main>{children}</main>
+      <main className="pb-16 md:pb-0">{children}</main>
       <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8 md:pt-8">
         <div className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-[1.2fr_1fr_1fr]">
           <div>
@@ -127,7 +128,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
-      {/* Mobile bottom nav removed — handled per-page via MobileBottomNav */}
+      <MobileShell />
       <ElianaFloatingAssistant />
     </div>
   );
