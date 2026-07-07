@@ -418,3 +418,62 @@ export const remittancePaymentReviewSchema = z.object({
   decision: z.enum(["aprobado", "rechazado", "nueva_evidencia"]),
   note: z.string().max(1000).optional()
 });
+
+export const couponSchema = z.object({
+  code: z.string().min(3).max(30).transform(s => s.toUpperCase()),
+  description: z.string().max(300).optional(),
+  discountType: z.enum(["percentage", "fixed"]),
+  discountValue: z.coerce.number().positive(),
+  minOrderAmount: z.coerce.number().min(0).default(0),
+  maxUses: z.coerce.number().int().min(0).default(0),
+  startsAt: z.string().optional(),
+  expiresAt: z.string().optional()
+});
+
+export const taxRateSchema = z.object({
+  country: z.string().min(2),
+  province: z.string().optional().or(z.literal("")),
+  ratePercent: z.coerce.number().min(0).max(100),
+  taxName: z.string().min(2).default("VAT")
+});
+
+export const shippingRateSchema = z.object({
+  country: z.string().min(2),
+  province: z.string().optional().or(z.literal("")),
+  municipality: z.string().optional().or(z.literal("")),
+  minOrderAmount: z.coerce.number().min(0).default(0),
+  cost: z.coerce.number().min(0),
+  estimatedDays: z.string().default("3-5")
+});
+
+export const productReviewSchema = z.object({
+  productId: z.string().uuid(),
+  orderId: z.string().uuid(),
+  rating: z.coerce.number().int().min(1).max(5),
+  title: z.string().max(120).optional(),
+  comment: z.string().max(1000).optional(),
+  images: z.string().optional()
+});
+
+export const returnRequestSchema = z.object({
+  orderId: z.string().uuid(),
+  orderItemId: z.string().uuid().optional().or(z.literal("")),
+  reason: z.string().min(5),
+  description: z.string().max(1000).optional(),
+  evidenceUrls: z.string().optional()
+});
+
+export const returnReviewSchema = z.object({
+  returnId: z.string().uuid(),
+  status: z.enum(["pendiente", "aprobado", "rechazado", "en_transito", "recibido", "reembolsado"]),
+  resolutionType: z.enum(["refund", "replacement", "store_credit"]).optional(),
+  resolutionAmount: z.coerce.number().min(0).optional(),
+  adminNote: z.string().max(700).optional()
+});
+
+export const inventoryAdjustmentSchema = z.object({
+  productId: z.string().uuid(),
+  quantityChange: z.coerce.number().int(),
+  reason: z.enum(["adjustment", "restock", "cancellation"]),
+  note: z.string().max(500).optional()
+});

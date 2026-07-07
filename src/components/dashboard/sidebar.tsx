@@ -15,6 +15,14 @@ import {
   WalletCards,
   X,
   Menu,
+  Tag,
+  Receipt,
+  Truck,
+  Boxes,
+  Star,
+  RotateCcw,
+  Package,
+  TrendingUp,
 } from "lucide-react";
 import type { UserRole } from "@/types/domain";
 import { useState } from "react";
@@ -44,6 +52,14 @@ const nav: NavCategory[] = [
       { label: "Panel Admin", href: "/dashboard/admin", icon: Settings, roles: ["administrador", "superadmin"] },
       { label: "Usuarios", href: "/dashboard/admin/users", icon: UsersRound, roles: ["administrador", "superadmin"] },
       { label: "WhatsApp Carts", href: "/dashboard/admin/whatsapp-carts", icon: ShoppingCart, roles: ["administrador", "superadmin"] },
+      { label: "Productos", href: "/dashboard/admin/products", icon: Package, roles: ["administrador", "superadmin"] },
+      { label: "Cupones", href: "/dashboard/admin/coupons", icon: Tag, roles: ["administrador", "superadmin"] },
+      { label: "Impuestos", href: "/dashboard/admin/tax-rates", icon: Receipt, roles: ["administrador", "superadmin"] },
+      { label: "Envios", href: "/dashboard/admin/shipping-rates", icon: Truck, roles: ["administrador", "superadmin"] },
+      { label: "Inventario", href: "/dashboard/admin/inventory", icon: Boxes, roles: ["administrador", "superadmin"] },
+      { label: "Resenas", href: "/dashboard/admin/reviews", icon: Star, roles: ["administrador", "superadmin"] },
+      { label: "Devoluciones", href: "/dashboard/admin/returns", icon: RotateCcw, roles: ["administrador", "superadmin"] },
+      { label: "Analytics", href: "/dashboard/admin/analytics", icon: TrendingUp, roles: ["administrador", "superadmin"] },
     ],
   },
   {

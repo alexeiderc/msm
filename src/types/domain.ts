@@ -50,3 +50,15 @@ export const supportReasons = [
   "otro"
 ] as const;
 export type SupportReason = (typeof supportReasons)[number];
+
+export const discountTypes = ["percentage", "fixed"] as const;
+export type DiscountType = (typeof discountTypes)[number];
+
+export const returnStatuses = ["pendiente", "aprobado", "rechazado", "en_transito", "recibido", "reembolsado"] as const;
+export type ReturnStatus = (typeof returnStatuses)[number];
+
+export const resolutionTypes = ["refund", "replacement", "store_credit"] as const;
+export type ResolutionType = (typeof resolutionTypes)[number];
+
+export const inventoryReasons = ["order", "return", "adjustment", "restock", "cancellation"] as const;
+export type InventoryReason = (typeof inventoryReasons)[number];
