@@ -114,6 +114,15 @@ export function CheckoutForm({ productId }: { productId?: string }) {
           <h2 className="flex items-center gap-2 text-base font-bold">
             <WalletCards size={18} /> Pago dentro de MSM
           </h2>
+
+          <div className="mt-4 grid gap-4">
+            <label className="space-y-1 text-sm font-semibold">
+              Cupon de descuento (opcional)
+              <div className="flex gap-2">
+                <Input name="couponCode" placeholder="CODIGO" className="uppercase" />
+              </div>
+            </label>
+          </div>
           <p className="mt-1 text-sm text-slate-600">
             El metodo principal es Saldo MSM. Los metodos externos se usan para cargar saldo y Economia los aprueba.
           </p>
@@ -177,6 +186,33 @@ export function CheckoutForm({ productId }: { productId?: string }) {
                 <option value="00000000-0000-4000-8000-000000000503">Oxxo pausado</option>
               </Select>
             </label>
+          </div>
+        </div>
+
+        <div className="rounded-lg border border-msm-line bg-white p-4">
+          <h2 className="mb-3 text-base font-bold">Resumen de precios</h2>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span id="checkout-subtotal">—</span>
+            </div>
+            <div className="flex justify-between text-green-700">
+              <span>Descuento</span>
+              <span id="checkout-discount">—</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Impuesto</span>
+              <span id="checkout-tax">—</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Envio</span>
+              <span id="checkout-shipping">—</span>
+            </div>
+            <hr className="border-msm-line" />
+            <div className="flex justify-between font-bold">
+              <span>Total</span>
+              <span id="checkout-total">—</span>
+            </div>
           </div>
         </div>
 

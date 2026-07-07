@@ -8,6 +8,8 @@ import { makeOrderNumber } from "@/lib/utils";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { notifyOrderCreated, notifyOrderStatusChange } from "@/lib/notifications";
+import { validateCoupon } from "@/server/actions/coupons";
+import { getTaxForLocation, getShippingCost } from "@/server/actions/tax-shipping";
 import type { ActionResult } from "@/types/actions";
 
 export type ActionState = ActionResult;
@@ -189,6 +191,28 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
   );
   const subtotal = Number((Number(product.price) * quantity).toFixed(2));
   const msmCommission = Number((subtotal * (commissionRate / 100)).toFixed(2));
+
+  let discountAmount = 0;
+  let couponId: string | null = null;
+  const couponCode = parsed.data.couponCode?.trim();
+  if (couponCode) {
+    const couponResult = await validateCoupon(couponCode, subtotal) as { ok: true; discount: number; coupon: { id: string } } | { ok: false; message: string };
+    if (couponResult.ok) {
+      discountAmount = Number(couponResult.discount.toFixed(2));
+      couponId = couponResult.coupon.id;
+    }
+  }
+
+  const discountSubtotal = Number((subtotal - discountAmount).toFixed(2));
+  const taxResult = await getTaxForLocation(customerProfile?.country ?? "Global");
+  const taxAmount = taxResult ? Number((discountSubtotal * (taxResult.rate / 100)).toFixed(2)) : 0;
+  const storeProvince = Array.isArray(productRelations.stores) ? productRelations.stores[0]?.province : productRelations.stores?.province;
+  const storeMunicipality = Array.isArray(productRelations.stores) ? productRelations.stores[0]?.municipality : productRelations.stores?.municipality;
+  const shippingResult = await getShippingCost("Cuba", storeProvince ?? undefined, storeMunicipality ?? undefined, subtotal);
+  const shippingCost = shippingResult?.cost ?? 0;
+  const shippingRateId: string | null = null;
+  const totalAmount = Number((discountSubtotal + taxAmount + shippingCost).toFixed(2));
+
   let gatewayCommission = 0;
   let account: { id: string; daily_limit?: number | string; received_today?: number | string; status?: string } | null = null;
   let walletBeforeBalance = 0;
@@ -207,10 +231,10 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     }
 
     walletBeforeBalance = Number(wallet.balance ?? 0);
-    if (walletBeforeBalance < subtotal) {
+    if (walletBeforeBalance < totalAmount) {
       return {
         ok: false,
-        message: `Saldo MSM insuficiente. Tienes ${walletBeforeBalance.toFixed(2)} ${parsed.data.paymentCurrency} y necesitas ${subtotal.toFixed(2)}.`
+        message: `Saldo MSM insuficiente. Tienes ${walletBeforeBalance.toFixed(2)} ${parsed.data.paymentCurrency} y necesitas ${totalAmount.toFixed(2)}.`
       };
     }
   } else {
@@ -278,20 +302,20 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
     account = selectedAccount;
 
-    if (account && Number(account.received_today) + subtotal > Number(account.daily_limit)) {
+    if (account && Number(account.received_today) + totalAmount > Number(account.daily_limit)) {
       await admin.from("fraud_alerts").insert({
         user_id: user.id,
         type: "cuenta_supera_capacidad_diaria",
         severity: "media",
         message: "La cuenta de pago disponible superaria su limite diario.",
-        metadata: { accountId: account.id, subtotal, receivedToday: account.received_today }
+        metadata: { accountId: account.id, totalAmount, receivedToday: account.received_today }
       });
       await admin.from("audit_logs").insert({
         actor_id: user.id,
         action: "fraud.cuenta_supera_capacidad_diaria",
         entity: "payment_accounts",
         entity_id: account.id,
-        after: { subtotal, receivedToday: account.received_today }
+        after: { totalAmount, receivedToday: account.received_today }
       });
     }
   }
@@ -369,6 +393,11 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       delivery_window: parsed.data.deliveryWindow,
       note: parsed.data.note,
       subtotal,
+      discount_amount: discountAmount,
+      tax_amount: taxAmount,
+      shipping_cost: shippingCost,
+      shipping_rate_id: shippingRateId,
+      coupon_id: couponId,
       msm_commission: msmCommission,
       gateway_commission: gatewayCommission,
       seller_net: sellerNet,
@@ -395,8 +424,24 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     name: product.name,
     quantity,
     unit_price: Number(product.price),
-    total: subtotal
+    total: subtotal,
+    discount_amount: discountAmount,
+    tax_amount: taxAmount
   });
+
+  if (couponId) {
+    await admin.from("coupon_usage").insert({
+      coupon_id: couponId,
+      order_id: order.id,
+      customer_id: user.id,
+      discount_amount: discountAmount
+    });
+    const { data: couponRow } = await admin.from("coupons").select("used_count").eq("id", couponId).maybeSingle();
+    await admin.from("coupons").update({
+      used_count: (couponRow?.used_count ?? 0) + 1,
+      updated_at: new Date().toISOString()
+    }).eq("id", couponId);
+  }
 
   await admin
     .from("products")
@@ -434,7 +479,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       .maybeSingle();
 
     if (wallet) {
-      const nextBalance = Number(wallet.balance ?? walletBeforeBalance) - subtotal;
+      const nextBalance = Number(wallet.balance ?? walletBeforeBalance) - totalAmount;
       await admin
         .from("wallet_accounts")
         .update({ balance: Number(nextBalance.toFixed(2)), updated_at: new Date().toISOString() })
@@ -447,12 +492,12 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
           user_id: user.id,
           type: "debito",
           status: "confirmado",
-          amount: subtotal,
+          amount: totalAmount,
           currency: parsed.data.paymentCurrency,
           reference_type: "order",
           reference_id: order.id,
           note: `Pago con Saldo MSM para orden ${orderNumber}`,
-          metadata: { orderNumber, sellerId, storeId: product.store_id }
+          metadata: { orderNumber, sellerId, storeId: product.store_id, subtotal, discountAmount, taxAmount, shippingCost }
         })
         .select("id")
         .single();
@@ -466,7 +511,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
         source: "saldo_msm",
         event_type: "compra_pagada",
         points: 2,
-        metadata: { orderId: order.id, orderNumber, amount: subtotal }
+        metadata: { orderId: order.id, orderNumber, amount: totalAmount }
       });
     }
   }
