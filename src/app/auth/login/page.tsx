@@ -27,9 +27,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
         <LoginForm next={params.next} error={params.error} />
         <p className="mt-4 text-center text-sm font-semibold text-slate-600">
-          No tienes cuenta?{" "}
-          <Link href="/auth/signup" className="text-msm-blue hover:text-msm-electric">
-            Crear cuenta
+          <Link href="/auth/forgot-password" className="text-msm-blue hover:text-msm-electric">
+            Recuperar contrasena
           </Link>
         </p>
       </section>

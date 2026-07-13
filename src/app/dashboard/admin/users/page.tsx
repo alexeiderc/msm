@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Search, UserCog } from "lucide-react";
+import { Search, UserCog, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Input, Select } from "@/components/ui/input";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { AdminCreateUserForm } from "@/components/dashboard/admin-create-user-form";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,15 @@ export default async function AdminUsersPage({ searchParams }: { searchParams: P
             Volver admin
           </Link>
         </div>
+
+        <details className="mt-4 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
+          <summary className="flex cursor-pointer items-center gap-2 text-sm font-bold text-msm-blue">
+            <UserPlus size={16} /> Crear nuevo usuario
+          </summary>
+          <div className="mt-4">
+            <AdminCreateUserForm />
+          </div>
+        </details>
 
         <form className="mt-5 grid gap-3 rounded-lg border border-msm-line bg-white p-4 shadow-soft md:grid-cols-[1.4fr_1fr_1fr_1fr_1fr_auto]">
           <label className="relative">

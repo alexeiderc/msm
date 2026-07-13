@@ -96,6 +96,16 @@ export const adminUserKycSchema = z.object({
   note: z.string().max(700).optional()
 });
 
+export const adminCreateUserSchema = z.object({
+  email: z.string().email("Correo invalido."),
+  password: z.string().min(8, "Minimo 8 caracteres."),
+  fullName: z.string().min(3, "Nombre completo requerido."),
+  phone: z.string().optional(),
+  role: z.enum(["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]).default("cliente"),
+  sellerName: z.string().optional(),
+  storeName: z.string().optional()
+});
+
 export const sellerKycSchema = z.object({
   fullName: z.string().min(3),
   phone: z.string().min(7),

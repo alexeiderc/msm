@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   adminStoreProductSchema,
   adminVipStoreSchema,
+  adminCreateUserSchema,
   customerKycReviewSchema,
   orderReassignmentSchema,
   sellerApplicationReviewSchema,
@@ -548,4 +549,83 @@ export async function reassignOrder(_: ActionResult, formData: FormData): Promis
   revalidatePath("/dashboard/vip");
   revalidatePath("/orders");
   return { ok: true, message: "Orden reasignada, evento registrado y nuevo SLA activado." };
+}
+
+export async function adminCreateUser(_: ActionResult, formData: FormData): Promise<ActionResult> {
+  const parsed = adminCreateUserSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? "Datos invalidos." };
+  }
+
+  const actor = await requireAdminActor();
+  if (!actor.ok) return actor;
+
+  try {
+    const { data: authUser, error: authError } = await actor.admin.auth.admin.createUser({
+      email: parsed.data.email,
+      password: parsed.data.password,
+      email_confirm: true,
+      user_metadata: { full_name: parsed.data.fullName }
+    });
+
+    if (authError) return { ok: false, message: authError.message };
+    if (!authUser.user) return { ok: false, message: "Error al crear usuario de autenticacion." };
+
+    const { error: profileError } = await actor.admin.from("profiles").insert({
+      id: authUser.user.id,
+      email: parsed.data.email,
+      full_name: parsed.data.fullName,
+      phone: parsed.data.phone || null,
+      role: parsed.data.role,
+      status: "activo",
+      preferred_language: "es",
+      timezone: "America/New_York"
+    });
+
+    if (profileError) return { ok: false, message: profileError.message };
+
+    if (parsed.data.role === "vendedor_vip" && parsed.data.sellerName && parsed.data.storeName) {
+      const { error: sellerError } = await actor.admin.from("sellers").insert({
+        profile_id: authUser.user.id,
+        level: "vendedor_verificado",
+        status: "aprobado",
+        commission_rate: 10,
+        daily_capacity: 10
+      });
+
+      if (sellerError) return { ok: false, message: sellerError.message };
+
+      const { data: seller } = await actor.admin
+        .from("sellers")
+        .select("id")
+        .eq("profile_id", authUser.user.id)
+        .maybeSingle();
+
+      if (seller) {
+        await actor.admin.from("stores").insert({
+          seller_id: seller.id,
+          name: parsed.data.storeName,
+          slug: slugify(parsed.data.storeName) + "-" + authUser.user.id.slice(0, 8),
+          is_active: true,
+          delivery_zones: ["Toda Cuba"]
+        });
+      }
+    }
+
+    await actor.admin.from("audit_logs").insert({
+      actor_id: actor.user.id,
+      action: "admin.create_user",
+      entity: "profiles",
+      entity_id: authUser.user.id,
+      after: { email: parsed.data.email, role: parsed.data.role, fullName: parsed.data.fullName }
+    });
+
+    revalidatePath("/dashboard/admin/users");
+    return {
+      ok: true,
+      message: `Usuario ${parsed.data.email} creado como ${parsed.data.role}. Credenciales enviadas al correo registrado.`
+    };
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : "Error al crear usuario." };
+  }
 }
