@@ -1,6 +1,10 @@
 const { Client } = require('pg');
 
-const DATABASE_URL = 'postgresql://postgres:MSMDev2026**@db.vcfevlpoqwnsvkwfoprv.supabase.co:5432/postgres';
+const DATABASE_URL = process.env.DATABASE_URL || process.env.DIRECT_URL;
+
+if (!DATABASE_URL) {
+  throw new Error("Configura DATABASE_URL o DIRECT_URL antes de ejecutar este script.");
+}
 
 const sql = `
 create table if not exists settings (
