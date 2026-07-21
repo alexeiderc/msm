@@ -12,6 +12,17 @@ function authCallbackUrl(nextPath: string) {
   return `${siteUrl}/auth/callback?next=${encodeURIComponent(nextPath)}`;
 }
 
+function authErrorMessage(code?: string) {
+  const messages: Record<string, string> = {
+    invalid_credentials: "El correo o la contrasena no son correctos.",
+    email_not_confirmed: "Confirma tu correo antes de iniciar sesion.",
+    user_banned: "Esta cuenta no puede iniciar sesion. Contacta soporte MSM.",
+    over_request_rate_limit: "Demasiados intentos. Espera unos minutos y vuelve a probar."
+  };
+
+  return (code && messages[code]) || "No se pudo iniciar sesion. Revisa tus datos e intenta nuevamente.";
+}
+
 export async function login(_: ActionResult, formData: FormData): Promise<ActionResult> {
   const parsed = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -26,7 +37,7 @@ export async function login(_: ActionResult, formData: FormData): Promise<Action
   });
 
   if (error) {
-    return { ok: false, message: error.message };
+    return { ok: false, message: authErrorMessage(error.code) };
   }
 
   const {
@@ -95,6 +106,8 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
     return { ok: false, message: error.message };
   }
 
+  const betaMode = process.env.BETA_MODE === "true";
+
   if (data.user?.id) {
     try {
       const admin = createAdminClient();
@@ -105,7 +118,7 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
         phone: parsed.data.phone,
         country: parsed.data.country,
         role: "cliente",
-        status: "activo",
+        status: betaMode ? "pausado" : "activo",
         preferred_language: "es",
         timezone: "America/New_York",
         notification_email_enabled: true,
@@ -116,8 +129,16 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
         action: "profile.signup",
         entity: "profiles",
         entity_id: data.user.id,
-        after: { email: parsed.data.email }
+        after: { email: parsed.data.email, beta_mode: betaMode }
       });
+
+      if (betaMode) {
+        await admin.from("beta_access").upsert({
+          user_id: data.user.id,
+          status: "pendiente",
+          note: "Registro creado desde la beta publica."
+        }, { onConflict: "user_id" });
+      }
     } catch {
       // En local puede no existir service role. Supabase Auth mantiene la cuenta creada.
     }
@@ -125,7 +146,9 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
 
   return {
     ok: true,
-    message: "Listo. Revisa tu correo si Supabase pide confirmacion. Cuenta creada. Ahora puedes validar tus datos en /account/kyc y seguir tus ordenes en /orders."
+    message: betaMode
+      ? "Cuenta creada. Revisa tu correo para confirmarla. MSM revisara el acceso antes de habilitar pagos y operaciones."
+      : "Cuenta creada. Revisa tu correo si Supabase pide confirmacion. Ya puedes completar tu perfil y validar tus datos."
   };
 }
 
