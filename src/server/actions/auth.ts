@@ -23,6 +23,19 @@ function authErrorMessage(code?: string) {
   return (code && messages[code]) || "No se pudo iniciar sesion. Revisa tus datos e intenta nuevamente.";
 }
 
+function signupErrorMessage(code?: string) {
+  const messages: Record<string, string> = {
+    email_address_invalid: "Escribe un correo electronico real y valido.",
+    email_exists: "Ya existe una cuenta con este correo. Inicia sesion o recupera tu contrasena.",
+    user_already_exists: "Ya existe una cuenta con este correo. Inicia sesion o recupera tu contrasena.",
+    signup_disabled: "El registro esta temporalmente pausado. Contacta soporte MSM.",
+    over_email_send_rate_limit: "Se enviaron demasiadas solicitudes. Espera unos minutos y vuelve a probar.",
+    weak_password: "La contrasena necesita mas seguridad. Usa mayusculas, minusculas, numeros y un simbolo."
+  };
+
+  return (code && messages[code]) || "No se pudo crear la cuenta. Revisa los datos e intenta nuevamente.";
+}
+
 export async function login(_: ActionResult, formData: FormData): Promise<ActionResult> {
   const parsed = loginSchema.safeParse(Object.fromEntries(formData.entries()));
 
@@ -103,7 +116,7 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
   });
 
   if (error) {
-    return { ok: false, message: error.message };
+    return { ok: false, message: signupErrorMessage(error.code) };
   }
 
   const betaMode = process.env.BETA_MODE === "true";
