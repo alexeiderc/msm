@@ -1,23 +1,19 @@
 import Link from "next/link";
+import { ArrowRight, ShieldCheck } from "lucide-react";
 
 export function MobileHero() {
   return (
-    <section className="mx-3 mt-3 overflow-hidden rounded-2xl bg-gradient-to-br from-[#020B2D] via-[#0A1E6B] to-violet-700 p-6 text-white shadow-xl">
-      <p className="inline-flex items-center gap-1 rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-white/90">
-        MSM Marketplace
-      </p>
-      <h2 className="mt-3 text-2xl font-black leading-tight">
-        Todo lo que necesitas,
-        <br />
-        en un solo lugar
-      </h2>
-      <p className="mt-2 text-sm font-semibold text-white/75">Compra seguro. Recibe en Cuba.</p>
-      <Link
-        href="/products"
-        className="mt-4 inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-white px-6 text-sm font-extrabold text-[#020B2D] shadow-lg transition active:scale-[0.97]"
-      >
-        Comprar ahora
-      </Link>
+    <section className="msm-hero-surface mx-3 mt-3 overflow-hidden rounded-lg p-5 text-white shadow-lift">
+      <div className="max-w-[17rem]">
+        <p className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-bold text-white">
+          <ShieldCheck size={13} /> Compra con confianza
+        </p>
+        <h1 className="mt-3 text-[28px] font-black leading-tight">MSM my store</h1>
+        <p className="mt-2 text-sm font-semibold leading-5 text-msm-ice/90">Productos, servicios y remesas para Cuba y el mundo.</p>
+        <Link href="/products" className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-md bg-white px-4 text-sm font-bold text-msm-navy shadow-soft">
+          Ver productos <ArrowRight size={16} />
+        </Link>
+      </div>
     </section>
   );
 }

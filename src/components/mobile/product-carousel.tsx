@@ -2,95 +2,80 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Plus, ChevronRight } from "lucide-react";
+import { Check, ChevronRight, MapPin, Plus } from "lucide-react";
+import { useState } from "react";
 import { officialPublicProductsFallback } from "@/lib/demo-msm-store";
-import { addToCart } from "@/lib/cart-store";
-import type { CartItem } from "@/lib/cart-store";
+import { addToCart, type CartItem } from "@/lib/cart-store";
+import { currency } from "@/lib/utils";
 
-const products = officialPublicProductsFallback.slice(0, 8).map((p) => ({
-  ...p,
-  category: p.category ?? "Producto",
+const products = officialPublicProductsFallback.slice(0, 8).map((product) => ({
+  ...product,
+  category: product.category ?? "Producto",
 }));
 
-function formatPrice(price: number, currency: string) {
-  return `${currency === "USD" ? "$" : "€"}${price.toFixed(2)}`;
+function QuickAdd({ product }: { product: (typeof products)[number] }) {
+  const [added, setAdded] = useState(false);
+
+  function addProduct() {
+    const item: CartItem = {
+      productId: product.id,
+      name: product.name,
+      price: product.price,
+      currency: product.currency,
+      image: product.image,
+      store: product.store ?? "MSM my store",
+      storeId: product.storeSlug ?? "msm-my-store",
+      sellerId: product.storeSlug ?? "msm-my-store",
+      quantity: 1,
+      stock: Math.max(product.stock, 1),
+      slug: product.slug,
+    };
+    addToCart(item);
+    setAdded(true);
+    window.setTimeout(() => setAdded(false), 1500);
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        addProduct();
+      }}
+      className={`grid h-8 w-8 shrink-0 place-items-center rounded-md transition ${added ? "bg-emerald-600 text-white" : "bg-msm-blue text-white active:bg-msm-navy"}`}
+      aria-label={`Agregar ${product.name} al carrito`}
+    >
+      {added ? <Check size={15} /> : <Plus size={17} />}
+    </button>
+  );
 }
 
 export function ProductCarousel() {
   return (
     <section className="mt-5 px-3">
       <div className="flex items-center justify-between">
-        <h3 className="flex items-center gap-1 text-sm font-extrabold text-slate-800">
-          Ofertas para ti <span className="text-base">🔥</span>
-        </h3>
-        <Link
-          href="/products"
-          className="flex items-center gap-0.5 text-xs font-bold text-msm-blue"
-        >
-          Ver todas <ChevronRight size={14} />
-        </Link>
+        <h2 className="text-sm font-black text-msm-ink">Productos destacados</h2>
+        <Link href="/products" className="inline-flex items-center gap-0.5 text-xs font-bold text-msm-blue">Ver catalogo <ChevronRight size={14} /></Link>
       </div>
       <div className="mt-3 flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
         {products.map((product) => (
-          <Link
-            key={product.id}
-            href={`/products/${product.slug}`}
-            className="flex w-40 shrink-0 flex-col rounded-2xl border border-slate-100 bg-white shadow-sm"
-          >
-            <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-50">
-              <Image
-                src={product.image}
-                alt={product.name}
-                fill
-                className="object-cover"
-                sizes="160px"
-              />
+          <Link key={product.id} href={`/products/${product.slug}`} className="flex w-44 shrink-0 flex-col overflow-hidden rounded-lg border border-msm-line bg-white shadow-sm">
+            <div className="relative aspect-square bg-slate-50">
+              <Image src={product.image} alt={product.name} fill className="object-cover" sizes="176px" />
+              <span className="absolute left-2 top-2 rounded-md bg-white/95 px-2 py-1 text-[10px] font-bold text-msm-ink">{product.category}</span>
             </div>
-            <div className="flex flex-1 flex-col justify-between p-2.5">
+            <div className="flex flex-1 flex-col justify-between p-3">
               <div>
-                <p className="text-xs font-bold leading-tight text-slate-800 line-clamp-2">
-                  {product.name}
-                </p>
-                {product.store && (
-                  <p className="mt-0.5 text-[10px] font-semibold text-slate-500">
-                    {product.store}
-                  </p>
-                )}
+                <p className="line-clamp-2 text-xs font-bold leading-4 text-msm-ink">{product.name}</p>
+                <p className="mt-1 inline-flex items-center gap-1 text-[10px] font-semibold text-slate-500"><MapPin size={11} className="text-msm-blue" /> {product.municipality ?? product.province}</p>
               </div>
-              <div className="mt-1.5 flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-extrabold text-slate-800">
-                    {formatPrice(product.price, product.currency)}
-                  </p>
-                </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      const item: CartItem = {
-                        productId: product.id,
-                        name: product.name,
-                        price: product.price,
-                        currency: product.currency,
-                        image: product.image,
-                        store: product.store ?? "",
-                        storeId: product.storeSlug ?? "",
-                        sellerId: product.storeSlug ?? "",
-                        quantity: 1,
-                        stock: product.stock,
-                        slug: product.slug,
-                      };
-                      addToCart(item);
-                    }}
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-msm-blue to-violet-600 text-white shadow-sm transition active:scale-90"
-                    aria-label="Agregar al carrito"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
+              <div className="mt-3 flex items-center justify-between gap-2">
+                <p className="text-base font-black text-msm-ink">{currency(product.price, product.currency)}</p>
+                <QuickAdd product={product} />
               </div>
-            </Link>
+            </div>
+          </Link>
         ))}
       </div>
     </section>

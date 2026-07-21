@@ -29,8 +29,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    linear-gradient(180deg, #f8fbff 0%, #eef6fd 44%, #f7f9fb 100%);
+  background: #f7f9fb;
   color: var(--foreground);
   font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
 }
@@ -54,16 +53,15 @@ textarea {
 
 .msm-hero-surface {
   background:
-    radial-gradient(circle at 18% 22%, rgba(53, 168, 255, 0.12), transparent 34%),
-    linear-gradient(90deg, rgba(3, 12, 28, 0.64) 0%, rgba(3, 12, 28, 0.34) 46%, rgba(3, 12, 28, 0.68) 100%),
-    linear-gradient(180deg, rgba(7, 17, 30, 0.18), rgba(7, 17, 30, 0.74)),
+    linear-gradient(90deg, rgba(3, 12, 28, 0.82) 0%, rgba(3, 12, 28, 0.48) 54%, rgba(3, 12, 28, 0.76) 100%),
+    linear-gradient(180deg, rgba(7, 17, 30, 0.18), rgba(7, 17, 30, 0.68)),
     url("/brand/msm-global-watermark.jpg");
   background-position: center;
   background-size: cover;
 }
 
 .msm-slogan {
-  text-shadow: 0 2px 22px rgba(53, 168, 255, 0.45);
+  text-shadow: 0 2px 18px rgba(53, 168, 255, 0.35);
 }
 
 .msm-luminous-panel {
@@ -137,6 +135,11 @@ html[data-lite="true"] .shadow-lift {
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+:focus-visible {
+  outline: 2px solid #197bd2;
+  outline-offset: 2px;
 }
 
 @keyframes eliana-slide-in {

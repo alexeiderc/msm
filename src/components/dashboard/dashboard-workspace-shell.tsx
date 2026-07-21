@@ -13,7 +13,6 @@ import {
   Truck,
   UsersRound,
   WalletCards,
-  Sparkles,
 } from "lucide-react";
 import type { UserRole } from "@/types/domain";
 
@@ -77,11 +76,9 @@ const roleConfig: Record<UserRole, { title: string; subtitle: string; href: stri
   },
 };
 
-function FuturisticGlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function WorkspaceCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div
-      className={`rounded-2xl border border-white/20 bg-white/70 backdrop-blur-xl shadow-xl shadow-black/5 ${className}`}
-    >
+    <div className={`rounded-lg border border-msm-line bg-white shadow-soft ${className}`}>
       {children}
     </div>
   );
@@ -91,60 +88,39 @@ export function DashboardWorkspaceShell({ role }: { role: UserRole }) {
   const config = roleConfig[role] ?? roleConfig.cliente;
 
   return (
-    <section className="relative min-h-screen overflow-hidden px-4 py-8">
-      {/* Fondo futurista */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute -left-32 -top-32 h-96 w-96 rounded-full bg-gradient-to-br from-msm-blue/20 to-purple-500/10 blur-3xl" />
-        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-blue-400/15 to-cyan-300/10 blur-3xl" />
-        <div className="absolute left-1/2 top-1/3 h-64 w-64 -translate-x-1/2 rounded-full bg-gradient-to-r from-violet-300/10 to-pink-300/10 blur-3xl" />
-        <div className="absolute bottom-1/4 left-1/4 h-px w-1/2 bg-gradient-to-r from-transparent via-msm-blue/30 to-transparent" />
-      </div>
-
+    <section className="min-h-screen bg-msm-cloud px-4 py-6 md:py-8">
       <div className="mx-auto max-w-7xl">
-        {/* Header futurista */}
-        <div className="mb-8 flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-msm-blue to-blue-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-widest text-white shadow-lg shadow-msm-blue/25">
-              <Sparkles size={12} />
-              Dashboard
-            </span>
-          </div>
-          <h1 className="bg-gradient-to-r from-msm-ink via-msm-ink to-slate-400 bg-clip-text text-4xl font-black tracking-tight text-transparent">
-            {config.title}
-          </h1>
+        <div className="mb-6 border-b border-msm-line pb-5">
+          <span className="inline-flex rounded-md bg-blue-50 px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-msm-blue">Dashboard MSM</span>
+          <h1 className="mt-3 text-3xl font-black tracking-normal text-msm-ink md:text-4xl">{config.title}</h1>
           <p className="max-w-xl text-base leading-relaxed text-slate-500">
             {config.subtitle}
           </p>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
-          {/* Panel principal - perfil */}
-          <FuturisticGlassCard>
+          <WorkspaceCard>
             <div className="p-6">
-              <div className="grid h-14 w-14 place-items-center rounded-xl bg-gradient-to-br from-msm-blue to-blue-700 text-white shadow-lg shadow-msm-blue/20">
+              <div className="grid h-12 w-12 place-items-center rounded-md bg-msm-blue text-white">
                 <LayoutDashboard size={24} />
               </div>
               <h2 className="mt-4 text-2xl font-black text-msm-ink">{config.title}</h2>
               <p className="mt-2 text-sm leading-relaxed text-slate-500">{config.subtitle}</p>
-              <Link
-                href={config.href}
-                className="mt-6 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-msm-blue to-blue-700 px-4 text-sm font-bold text-white shadow-lg shadow-msm-blue/25 transition-all hover:shadow-xl hover:shadow-msm-blue/30 hover:brightness-110"
-              >
+              <Link href={config.href} className="mt-6 flex min-h-11 w-full items-center justify-center gap-2 rounded-md bg-msm-blue px-4 text-sm font-bold text-white transition hover:bg-msm-navy">
                 <BarChart3 size={16} />
                 Abrir panel principal
               </Link>
             </div>
-          </FuturisticGlassCard>
+          </WorkspaceCard>
 
-          {/* Acceso rapido - grid de tarjetas */}
           <div className="grid gap-4 sm:grid-cols-2">
             {config.items.map(([label, href, Icon, detail]) => (
               <Link
                 key={href}
                 href={href}
-                className="group rounded-2xl border border-white/20 bg-white/60 p-5 backdrop-blur-xl shadow-lg shadow-black/5 transition-all hover:-translate-y-1 hover:border-msm-blue/30 hover:bg-white/80 hover:shadow-xl hover:shadow-msm-blue/10"
+                className="group rounded-lg border border-msm-line bg-white p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lift"
               >
-                <span className="grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br from-blue-50 to-blue-100 text-msm-blue transition-all group-hover:from-msm-blue group-hover:to-blue-700 group-hover:text-white group-hover:shadow-lg group-hover:shadow-msm-blue/20">
+                <span className="grid h-11 w-11 place-items-center rounded-md bg-blue-50 text-msm-blue transition group-hover:bg-msm-blue group-hover:text-white">
                   <Icon size={20} />
                 </span>
                 <h3 className="mt-4 text-base font-bold text-msm-ink">{label}</h3>
@@ -154,13 +130,7 @@ export function DashboardWorkspaceShell({ role }: { role: UserRole }) {
           </div>
         </div>
 
-        {/* Barra decorativa inferior */}
-        <div className="mt-12 flex items-center gap-3">
-          <div className="h-px flex-1 bg-gradient-to-r from-msm-blue/20 via-slate-200 to-transparent" />
-          <span className="text-[11px] font-medium uppercase tracking-[0.2em] text-slate-400">
-            MSM My Store
-          </span>
-        </div>
+        <div className="mt-10 border-t border-msm-line pt-4 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">MSM my store</div>
       </div>
     </section>
   );

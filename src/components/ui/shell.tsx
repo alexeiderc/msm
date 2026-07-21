@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Bot, CircleDollarSign, ExternalLink, Gem, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards, Sparkles } from "lucide-react";
+import { Bot, CircleDollarSign, Gem, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards, Sparkles } from "lucide-react";
 import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LowDataModeToggle } from "@/components/performance/low-data-mode";
 import { CartCount } from "@/components/cart/cart-count";
@@ -18,23 +18,22 @@ const navItems = [
   ["YO SOY ELIANA", "/eliana", Bot]
 ] as const;
 
-const helpLinks = [
-  ["YO SOY ELIANA IA", "/eliana"],
-  ["La Maquina del Futuro", "/maquina-del-futuro"],
-  ["Quienes somos", "/quienes-somos"],
-  ["Centro de ayuda", "/help"],
-  ["Crear cuenta", "/auth/signup"],
-  ["Como funciona", "/how-it-works"],
-  ["Metodos activos", "/payment-methods"],
-  ["Cambio", "/exchange"],
-  ["Cajeros MSM", "/atm"],
-  ["Billetera", "/wallet"],
-  ["ZAFIRO", "/zafiro"],
+const exploreLinks = [
+  ["Productos", "/products"],
+  ["Remesas", "/remittances"],
   ["Tiendas VIP", "/tiendas-vip"],
+  ["Metodos activos", "/payment-methods"],
+  ["Billetera MSM", "/wallet"],
+  ["ZAFIRO", "/zafiro"]
+] as const;
+
+const helpLinks = [
+  ["Como funciona", "/how-it-works"],
+  ["Centro de ayuda", "/help"],
   ["Soporte", "/support"],
   ["Terminos", "/terms"],
-  ["Mi cuenta", "/account"],
-  ["Cuenta", "/account/kyc"]
+  ["Crear cuenta", "/auth/signup"],
+  ["YO SOY ELIANA", "/eliana"]
 ] as const;
 
 const panelLinks = [
@@ -49,36 +48,14 @@ const panelLinks = [
 function ZafiroSponsorBar() {
   return (
     <section className="border-b border-blue-300/20 bg-msm-midnight text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
-        <Link href="/zafiro" className="group flex min-w-0 items-center gap-2.5">
-          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-msm-blue text-white shadow-[0_8px_24px_rgba(25,123,210,0.35)]">
-            <Gem size={17} />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-blue-100">
-              Publicidad oficial
-            </span>
-            <span className="block truncate text-sm font-black text-white sm:text-base">
-              Sponsor ZAFIRO: conocimiento, reputacion y comunidad dentro del ecosistema MSM
-            </span>
-          </span>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2">
+        <Link href="/zafiro" className="flex min-w-0 items-center gap-2 text-xs font-bold text-white sm:text-sm">
+          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-msm-blue"><Gem size={14} /></span>
+          <span className="truncate"><span className="text-blue-200">Sponsor oficial:</span> ZAFIRO Universo Digital</span>
         </Link>
-        <div className="flex shrink-0 items-center gap-2">
-          <Link
-            href="/zafiro"
-            className="rounded-md border border-white/15 bg-white/10 px-3 py-2 text-xs font-black text-white transition hover:bg-white/15"
-          >
-            Ver modulo
-          </Link>
-          <a
-            href={zafiroModule.sponsorUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden items-center gap-1 rounded-md bg-white px-3 py-2 text-xs font-black text-msm-midnight transition hover:bg-blue-50 sm:inline-flex"
-          >
-            Sponsors <ExternalLink size={13} />
-          </a>
-        </div>
+        <a href={zafiroModule.sponsorUrl} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-bold text-msm-ice hover:text-white">
+          Conocer
+        </a>
       </div>
     </section>
   );
@@ -135,8 +112,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
       <main className="pb-16 md:pb-0">{children}</main>
-      <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8 md:pt-8">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 md:grid-cols-[1.2fr_1fr_1fr]">
+      <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8">
+        <div className="mx-auto grid max-w-7xl gap-7 px-4 md:grid-cols-[1.25fr_1fr_1fr_1fr]">
           <div>
             <Image
               src="/brand/msm-my-store-logo.jpeg"
@@ -147,9 +124,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               className="h-10 w-auto object-contain"
             />
             <p className="mt-3 max-w-md leading-6 text-slate-600">
-              MSM my store centraliza productos, servicios, remesas, pagos, ordenes,
-              entregas y confianza por pais, provincia, estado, municipio y ciudad.
+              Productos, servicios, remesas y vendedores VIP conectados por zona con pagos y ordenes organizados por MSM.
             </p>
+          </div>
+          <div>
+            <h2 className="font-bold text-msm-ink">Explorar</h2>
+            <div className="mt-3 grid gap-2">
+              {exploreLinks.map(([label, href]) => (
+                <Link key={href} href={href} className="font-semibold text-slate-600 hover:text-msm-blue">
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
           <div>
             <h2 className="font-bold text-msm-ink">Ayuda</h2>

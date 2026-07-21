@@ -14,9 +14,9 @@ export function TrustBadges() {
         {badges.map(([title, subtitle, Icon]) => (
           <div
             key={title}
-            className="flex shrink-0 items-center gap-2.5 rounded-xl border border-slate-100 bg-white px-3.5 py-3 shadow-sm"
+            className="flex shrink-0 items-center gap-2.5 rounded-lg border border-msm-line bg-white px-3.5 py-3 shadow-sm"
           >
-            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-blue-50 to-violet-50 text-msm-blue">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-blue-50 text-msm-blue">
               <Icon size={18} />
             </span>
             <div>

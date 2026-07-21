@@ -72,19 +72,17 @@ export function ProductsExperience({
   return (
     <AppShell>
       <section className="border-b border-white/10 bg-msm-midnight text-white">
-        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-8 md:grid-cols-[1.4fr_0.6fr] md:py-12">
+        <div className="mx-auto grid max-w-7xl gap-5 px-4 py-7 md:grid-cols-[1.45fr_0.55fr] md:py-9">
           <div>
             <p className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-white/10 px-3 py-1 text-sm font-semibold text-msm-ice">
               <ShieldCheck size={16} />
               Vendedores VIP verificados por pais, estado, provincia, ciudad y municipio
             </p>
-            <h1 className="mt-4 max-w-3xl text-3xl font-bold tracking-normal text-white md:text-5xl">
-              Productos y servicios MSM my store con pagos, ordenes y entregas auditadas.
+            <h1 className="mt-4 max-w-3xl text-3xl font-black tracking-normal text-white md:text-5xl">
+              Encuentra lo que necesitas, cerca de quien lo recibe.
             </h1>
-            <p className="mt-4 max-w-2xl text-base leading-7 text-msm-ice/80">
-              Compra en Cuba, Estados Unidos y futuros mercados. MSM my store centraliza el cobro,
-              la orden, el comprobante, la evidencia, el soporte y la confianza; el VIP entrega o
-              atiende localmente por zona.
+            <p className="mt-3 max-w-2xl text-base leading-7 text-msm-ice/80">
+              Explora productos y servicios publicados por tiendas VIP con ubicacion, disponibilidad y tiempo de entrega visibles antes de comprar.
             </p>
             <div className="mt-5 flex flex-wrap gap-3">
               <Link
@@ -101,19 +99,19 @@ export function ProductsExperience({
               </Link>
             </div>
           </div>
-          <div className="msm-luminous-panel rounded-lg p-4">
-            <p className="text-sm font-bold">Flujo controlado por MSM</p>
+          <div className="rounded-lg border border-white/15 bg-white/10 p-4">
+            <p className="text-sm font-bold">Compra con informacion clara</p>
             <div className="mt-3 grid gap-2 text-sm text-msm-ice/80">
-              <span>1. Comprador paga en MSM my store</span>
-              <span>2. Economia valida comprobante y cuenta asignada</span>
-              <span>3. VIP entrega con evidencia y cierre auditable</span>
+              <span>Ubicacion y zona de entrega</span>
+              <span>Tienda VIP responsable</span>
+              <span>Disponibilidad y tiempo estimado</span>
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-6 pb-24">
-        <form action="/products" className="grid gap-3 rounded-lg border border-msm-line bg-white p-3 md:grid-cols-[1.2fr_0.75fr_0.75fr_0.75fr_0.75fr_auto]">
+        <form action="/products" className="grid gap-3 rounded-lg border border-msm-line bg-white p-3 shadow-soft md:grid-cols-[1.2fr_0.75fr_0.75fr_0.75fr_0.75fr_auto]">
           <label className="relative">
             <Search className="absolute left-3 top-3 text-slate-400" size={18} />
             <Input
@@ -167,15 +165,15 @@ export function ProductsExperience({
               <option key={category} value={category}>{category}</option>
             ))}
           </Select>
-          <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-msm-line px-4 text-sm font-semibold text-slate-600">
+          <button className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-msm-blue px-4 text-sm font-bold text-white transition hover:bg-msm-navy">
             <SlidersHorizontal size={17} />
             Aplicar
           </button>
         </form>
 
-        <div className="mt-6 flex items-center gap-2 text-sm font-semibold text-slate-600">
-          <Filter size={16} />
-          Tiendas activas, productos revisables, servicios VIP y stock controlado por pais y zona
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-2 text-sm font-semibold text-slate-600">
+          <span className="inline-flex items-center gap-2"><Filter size={16} className="text-msm-blue" /> Catalogo por tienda, zona y disponibilidad</span>
+          <span className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-bold text-msm-blue">{filteredProducts.length} resultados</span>
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

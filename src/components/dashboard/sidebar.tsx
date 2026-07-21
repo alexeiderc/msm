@@ -139,7 +139,7 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setOpen(false)}>
-            <span className="grid h-8 w-8 place-items-center rounded-md bg-gradient-to-br from-msm-blue to-blue-700 text-xs font-bold text-white">M</span>
+            <span className="grid h-8 w-8 place-items-center rounded-md bg-msm-blue text-xs font-bold text-white">M</span>
             <span className="text-sm font-black text-msm-ink">MSM Dashboard</span>
           </Link>
           <button
@@ -166,7 +166,7 @@ export function DashboardSidebar({ role }: { role: UserRole }) {
                     onClick={() => setOpen(false)}
                     className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
                       active
-                        ? "bg-gradient-to-r from-msm-blue/10 to-blue-50 text-msm-blue shadow-sm"
+                        ? "bg-blue-50 text-msm-blue shadow-sm"
                         : "text-slate-600 hover:bg-slate-100 hover:text-msm-ink"
                     }`}
                   >
