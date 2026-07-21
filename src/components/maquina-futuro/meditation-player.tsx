@@ -62,7 +62,7 @@ export function MeditationPlayer({ content, onGenerate, isGenerating }: Meditati
               {isPlaying ? t.meditation.pause : t.meditation.play}
             </Button>
             <Button onClick={reset} className="bg-futura-cosmic text-futura-frost shadow-none hover:bg-futura-cosmic/80">
-              <RotateCcw size={16} /> {t.meditation.reset}
+              <RotateCcw size={16} /> {t.meditation.restart}
             </Button>
           </div>
 
@@ -79,9 +79,9 @@ export function MeditationPlayer({ content, onGenerate, isGenerating }: Meditati
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-futura-frost/60">{t.meditation.empty}</p>
+              <p className="text-sm text-futura-frost/60">{t.meditation.noMeditation}</p>
               <Button onClick={onGenerate} className="bg-futura-glow shadow-none">
-                <Play size={16} /> {t.meditation.generate}
+                <Play size={16} /> {t.meditation.generateBtn}
               </Button>
             </div>
           )}

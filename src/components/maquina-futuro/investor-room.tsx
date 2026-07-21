@@ -42,7 +42,7 @@ export function InvestorRoom({ roomName, summary, pitchText, accessToken, status
 
       {targetRaise && (
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-white/50">{t.investorRoom.goal}:</span>
+          <span className="text-xs text-white/50">{t.investorRoom.targetRaise}:</span>
           <span className="text-lg font-bold text-futura-ember">
             {new Intl.NumberFormat("en-US", { style: "currency", currency: currency ?? "USD" }).format(targetRaise)}
           </span>
@@ -52,7 +52,7 @@ export function InvestorRoom({ roomName, summary, pitchText, accessToken, status
       {accessToken && (
         <div className="flex items-center gap-2 mb-4">
           <Button onClick={copyLink} className="bg-futura-glow shadow-none text-xs">
-            <Copy size={14} /> {copied ? t.investorRoom.copied : t.investorRoom.copyLink}
+            <Copy size={14} /> {copied ? t.common.copied : t.common.copyLink}
           </Button>
           <a
             href={`/investors/${accessToken}`}
@@ -60,7 +60,7 @@ export function InvestorRoom({ roomName, summary, pitchText, accessToken, status
             rel="noreferrer"
             className="inline-flex items-center gap-1 rounded-md border border-white/20 bg-white/10 px-3 py-2 text-xs font-bold text-white"
           >
-            {t.investorRoom.viewPublic} <ExternalLink size={13} />
+            {t.common.viewPublic} <ExternalLink size={13} />
           </a>
         </div>
       )}

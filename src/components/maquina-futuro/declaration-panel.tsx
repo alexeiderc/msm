@@ -26,10 +26,10 @@ export function DeclarationPanel({ declarations = [], onSave, onDelete, isSaving
   const [category, setCategory] = useState("YO_SOY");
 
   const CATEGORIES = [
-    { value: "YO_SOY", label: t.declarations.yoSoY },
-    { value: "DECLARO", label: t.declarations.deClaro },
-    { value: "RECIBO", label: t.declarations.reCibo },
-    { value: "CONSTRUYO", label: t.declarations.construyo }
+    { value: "YO_SOY", label: t.declarations.categories.YO_SOY },
+    { value: "DECLARO", label: t.declarations.categories.DECLARO },
+    { value: "RECIBO", label: t.declarations.categories.RECIBO },
+    { value: "CONSTRUYO", label: t.declarations.categories.CONSTRUYO }
   ];
 
   function handleSave() {
@@ -81,7 +81,7 @@ export function DeclarationPanel({ declarations = [], onSave, onDelete, isSaving
           ))}
         </div>
       ) : (
-        <p className="text-center text-sm text-slate-400 py-4">{t.declarations.empty}</p>
+        <p className="text-center text-sm text-slate-400 py-4">{t.declarations.noDeclarations}</p>
       )}
     </div>
   );

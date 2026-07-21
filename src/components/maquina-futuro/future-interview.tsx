@@ -35,9 +35,9 @@ export function FutureInterview({ content, onGenerate, isGenerating }: FutureInt
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-slate-400">{t.interview.empty}</p>
+              <p className="text-sm text-slate-400">{t.interview.noInterview}</p>
               <Button onClick={onGenerate} className="bg-futura-ember text-futura-void shadow-none hover:bg-futura-ember/80">
-                <MessageCircle size={16} /> {t.interview.generate}
+                <MessageCircle size={16} /> {t.interview.generateBtn}
               </Button>
             </div>
           )}

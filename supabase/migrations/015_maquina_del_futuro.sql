@@ -160,8 +160,11 @@ ALTER TABLE investor_rooms ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Owner can manage own investor rooms" ON investor_rooms
   FOR ALL USING (auth.uid() = owner_id);
 
-CREATE POLICY "Anyone with access token can read investor room" ON investor_rooms
-  FOR SELECT USING (status = 'PUBLIC' OR access_token IS NOT NULL);
+-- A private room is read only by its owner through RLS. The public investor page
+-- uses the server-only admin client and must match the full opaque access token.
+-- Do not add a client SELECT policy based only on access_token IS NOT NULL: every
+-- newly created room has a token, which would expose all rooms to every caller.
+DROP POLICY IF EXISTS "Anyone with access token can read investor room" ON investor_rooms;
 
 CREATE POLICY "Superadmin can do everything on investor rooms" ON investor_rooms
   FOR ALL USING (
@@ -262,8 +265,11 @@ CREATE POLICY "Superadmin can read all audit events" ON audit_events
 CREATE POLICY "Owner can read own audit events" ON audit_events
   FOR SELECT USING (auth.uid() = actor_id);
 
-CREATE POLICY "System can insert audit events" ON audit_events
-  FOR INSERT WITH CHECK (true);
+-- API routes insert the authenticated user's own audit event. Service-role jobs
+-- bypass RLS when system events without an actor are necessary.
+DROP POLICY IF EXISTS "System can insert audit events" ON audit_events;
+CREATE POLICY "Authenticated users can insert own audit events" ON audit_events
+  FOR INSERT WITH CHECK (auth.uid() = actor_id);
 
 -- INDEXES
 CREATE INDEX IF NOT EXISTS idx_visions_owner ON project_visions(owner_id);

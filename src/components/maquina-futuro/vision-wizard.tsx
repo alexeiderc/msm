@@ -40,24 +40,24 @@ export function VisionWizard({ onComplete, isLoading }: VisionWizardProps) {
   });
 
   const VISION_TYPES = [
-    { value: "INVENTION", label: t.visionTypes.invention },
-    { value: "TECHNOLOGY", label: t.visionTypes.technology },
-    { value: "BUSINESS", label: t.visionTypes.business },
-    { value: "BOOK", label: t.visionTypes.book },
-    { value: "SPIRITUAL", label: t.visionTypes.spiritual },
-    { value: "PERSONAL", label: t.visionTypes.personal }
+    { value: "INVENTION", label: t.visions.types.INVENTION },
+    { value: "TECHNOLOGY", label: t.visions.types.TECHNOLOGY },
+    { value: "BUSINESS", label: t.visions.types.BUSINESS },
+    { value: "BOOK", label: t.visions.types.BOOK },
+    { value: "SPIRITUAL", label: t.visions.types.SPIRITUAL },
+    { value: "PERSONAL", label: t.visions.types.PERSONAL }
   ];
 
   const steps = [
-    { label: t.wizard.stepName, field: "title" as const, placeholder: t.wizard.namePlaceholder, type: "input" },
-    { label: t.wizard.stepIdea, field: "idea" as const, placeholder: t.wizard.ideaPlaceholder, type: "textarea" },
-    { label: t.wizard.stepProblem, field: "problem" as const, placeholder: t.wizard.problemPlaceholder, type: "textarea" },
-    { label: t.wizard.stepScene, field: "finalScene" as const, placeholder: t.wizard.scenePlaceholder, type: "textarea" },
-    { label: t.wizard.stepUsers, field: "targetUsers" as const, placeholder: t.wizard.usersPlaceholder, type: "textarea" },
-    { label: t.wizard.stepTech, field: "technologies" as const, placeholder: t.wizard.techPlaceholder, type: "textarea" },
-    { label: t.wizard.stepTeam, field: "teamRequired" as const, placeholder: t.wizard.teamPlaceholder, type: "textarea" },
-    { label: t.wizard.stepInvest, field: "investmentNeeded" as const, placeholder: t.wizard.investPlaceholder, type: "textarea" },
-    { label: t.wizard.stepFaith, field: "spiritualBase" as const, placeholder: t.wizard.faithPlaceholder, type: "textarea" }
+    { label: t.wizard.steps.name, field: "title" as const, placeholder: t.wizard.placeholders.name, type: "input" },
+    { label: t.wizard.steps.idea, field: "idea" as const, placeholder: t.wizard.placeholders.idea, type: "textarea" },
+    { label: t.wizard.steps.problem, field: "problem" as const, placeholder: t.wizard.placeholders.problem, type: "textarea" },
+    { label: t.wizard.steps.finalScene, field: "finalScene" as const, placeholder: t.wizard.placeholders.finalScene, type: "textarea" },
+    { label: t.wizard.steps.users, field: "targetUsers" as const, placeholder: t.wizard.placeholders.users, type: "textarea" },
+    { label: t.wizard.steps.technologies, field: "technologies" as const, placeholder: t.wizard.placeholders.technologies, type: "textarea" },
+    { label: t.wizard.steps.team, field: "teamRequired" as const, placeholder: t.wizard.placeholders.team, type: "textarea" },
+    { label: t.wizard.steps.investment, field: "investmentNeeded" as const, placeholder: t.wizard.placeholders.investment, type: "textarea" },
+    { label: t.wizard.steps.faith, field: "spiritualBase" as const, placeholder: t.wizard.placeholders.faith, type: "textarea" }
   ];
 
   const current = steps[step];
@@ -134,9 +134,9 @@ export function VisionWizard({ onComplete, isLoading }: VisionWizardProps) {
           {isLoading ? (
             <Loader2 size={16} className="animate-spin" />
           ) : step === steps.length - 1 ? (
-            <>{t.wizard.generate} <Sparkles size={16} /></>
+            <>{t.wizard.generateVision} <Sparkles size={16} /></>
           ) : (
-            <>{t.wizard.next} <ArrowRight size={16} /></>
+            <>{t.common.next} <ArrowRight size={16} /></>
           )}
         </Button>
       </div>

@@ -48,7 +48,7 @@ export function PrototypeMap({ content, onGenerate, isGenerating }: PrototypeMap
               <div className="mt-1 grid gap-1">
                 {(parsed.modules as Array<Record<string, string>>).map((m, i) => (
                   <div key={i} className="rounded-md bg-slate-50 p-2 text-xs">
-                    <span className="font-bold text-msm-ink">{m.name ?? `${t.prototype.module} ${i + 1}`}</span>
+                    <span className="font-bold text-msm-ink">{m.name ?? `Modulo ${i + 1}`}</span>
                     {m.description && <span className="text-slate-500 ml-2">- {m.description}</span>}
                   </div>
                 ))}
@@ -61,7 +61,7 @@ export function PrototypeMap({ content, onGenerate, isGenerating }: PrototypeMap
               <div className="mt-1 grid gap-1">
                 {(parsed.roadmap as Array<Record<string, string>>).map((r, i) => (
                   <div key={i} className="rounded-md bg-futura-glow/5 p-2 text-xs">
-                    <span className="font-bold text-futura-glow">{r.phase ?? `${t.prototype.phase} ${i + 1}`}</span>
+                    <span className="font-bold text-futura-glow">{r.phase ?? `Fase ${i + 1}`}</span>
                     {r.duration && <span className="text-slate-500 ml-2">{r.duration}</span>}
                   </div>
                 ))}
@@ -74,8 +74,8 @@ export function PrototypeMap({ content, onGenerate, isGenerating }: PrototypeMap
               <div className="mt-1 grid gap-1">
                 {(parsed.risks as Array<Record<string, string>>).map((r, i) => (
                   <div key={i} className="rounded-md bg-red-50 p-2 text-xs">
-                    <span className="font-bold text-red-600">{r.risk ?? `${t.prototype.risk} ${i + 1}`}</span>
-                    {r.mitigation && <span className="text-slate-500 ml-2">{t.prototype.mitigate}: {r.mitigation}</span>}
+                    <span className="font-bold text-red-600">{r.risk ?? `Riesgo ${i + 1}`}</span>
+                    {r.mitigation && <span className="text-slate-500 ml-2">Mitigacion: {r.mitigation}</span>}
                   </div>
                 ))}
               </div>
@@ -91,9 +91,9 @@ export function PrototypeMap({ content, onGenerate, isGenerating }: PrototypeMap
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
-              <p className="text-sm text-slate-400">{t.prototype.empty}</p>
+              <p className="text-sm text-slate-400">{t.prototype.noPrototype}</p>
               <Button onClick={onGenerate} className="bg-futura-mint text-futura-void shadow-none">
-                <Cpu size={16} /> {t.prototype.generate}
+                <Cpu size={16} /> {t.prototype.generateBtn}
               </Button>
             </div>
           )}

@@ -40,9 +40,9 @@ export function InvestorPitchCard({ content, onGenerate, isGenerating }: Investo
                 <Users size={24} />
                 <Target size={24} />
               </div>
-              <p className="text-sm text-slate-400">{t.pitch.empty}</p>
+              <p className="text-sm text-slate-400">{t.pitch.noPitch}</p>
               <Button onClick={onGenerate} className="bg-msm-blue shadow-none">
-                <TrendingUp size={16} /> {t.pitch.generate}
+                <TrendingUp size={16} /> {t.pitch.generateBtn}
               </Button>
             </div>
           )}
