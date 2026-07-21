@@ -66,7 +66,6 @@ export function SignupForm({ next }: { next?: string }) {
   const [localPhone, setLocalPhone] = useState("");
 
   const country = countries.find((c) => c.code === selectedCountry);
-  const phoneValue = country ? `${country.prefix} ${localPhone}` : localPhone;
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
 
@@ -76,7 +75,6 @@ export function SignupForm({ next }: { next?: string }) {
   return (
     <form action={formAction} className="mt-6 grid gap-5 md:gap-4">
       <input type="hidden" name="next" value={next ?? ""} />
-      <input type="hidden" name="phone" value={phoneValue} />
 
       <Field label="Nombre completo">
         <input
@@ -120,6 +118,7 @@ export function SignupForm({ next }: { next?: string }) {
             {country?.prefix ?? "+1"}
           </span>
           <input
+            name="phone"
             type="tel"
             value={localPhone}
             onChange={(e) => setLocalPhone(e.target.value.replace(/\D/g, ""))}
