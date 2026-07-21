@@ -1,6 +1,6 @@
 "use client";
 
-export default function ErrorPage({ error, reset }: { error: Error; reset: () => void }) {
+export default function ErrorPage({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-msm-cloud px-4">
       <h1 className="text-4xl font-bold text-msm-ink">Algo salio mal</h1>

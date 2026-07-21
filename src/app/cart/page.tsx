@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { ShoppingBag, Trash2, Minus, Plus, CheckCircle, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { getCart, removeFromCart, updateQuantity, clearCart, type CartItem } from "@/lib/cart-store";
@@ -10,7 +10,6 @@ import { cubaProvinces, getMunicipalitiesForProvince } from "@/lib/cuba-location
 import { sendWhatsAppCart } from "@/server/actions/whatsapp-cart";
 
 export default function CartPage() {
-  const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
@@ -147,7 +146,13 @@ export default function CartPage() {
                 </div>
                 {storeItems.map((item) => (
                   <div key={item.productId} className="flex items-center gap-4 border-b border-msm-line px-4 py-3 last:border-0">
-                    <img src={item.image} alt={item.name} className="h-16 w-16 rounded-md object-cover" />
+                    <Image
+                      src={item.image || "/icons/msm-icon.svg"}
+                      alt={item.name}
+                      width={64}
+                      height={64}
+                      className="h-16 w-16 rounded-md object-cover"
+                    />
                     <div className="min-w-0 flex-1">
                       <Link href={`/products/${item.slug}`} className="font-bold hover:text-msm-blue">
                         {item.name}

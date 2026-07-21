@@ -4,6 +4,7 @@ import {
   ArrowRightLeft,
   BadgeCheck,
   CircleDollarSign,
+  Gem,
   Headphones,
   Home as HomeIcon,
   Info,
@@ -39,7 +40,8 @@ const homeCategories = [
   ["Remesas", "/remittances", CircleDollarSign],
   ["Cambio", "/exchange", ArrowRightLeft],
   ["Cajeros", "/atm", QrCode],
-  ["Tiendas VIP", "/tiendas-vip", BadgeCheck]
+  ["Tiendas VIP", "/tiendas-vip", BadgeCheck],
+  ["ZAFIRO", "/zafiro", Gem]
 ] as const;
 
 const trustItems = [
@@ -68,7 +70,7 @@ export default function Home() {
           <div className="msm-scanlines absolute inset-0 opacity-20" aria-hidden="true" />
           <div className="relative mx-auto grid max-w-7xl gap-5 px-4 py-6 md:grid-cols-[1.05fr_0.95fr] md:items-center md:py-10">
             <div>
-              <Badge className="border-white/20 bg-white/10 text-msm-ice">msmmystore.com</Badge>
+              <Badge className="border-white/20 bg-white/10 text-msm-ice">marketplace.msmmystore.com</Badge>
               <h1 className="mt-4 max-w-4xl text-4xl font-black tracking-normal text-white md:text-6xl">
                 MSM my store
               </h1>
@@ -262,6 +264,11 @@ export default function Home() {
             <ArrowRightLeft className="text-msm-blue" size={24} />
             <h3 className="mt-3 font-bold">Cambio seguro</h3>
             <p className="mt-1 text-sm text-slate-600">Cotizaciones controladas sin publicar cuentas ni tasas sensibles.</p>
+          </Link>
+          <Link href="/zafiro" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
+            <Gem className="text-msm-blue" size={24} />
+            <h3 className="mt-3 font-bold">ZAFIRO</h3>
+            <p className="mt-1 text-sm text-slate-600">Conocimiento, comunidad, reputacion y ELIANA conectados al ecosistema MSM.</p>
           </Link>
         </section>
       </div>

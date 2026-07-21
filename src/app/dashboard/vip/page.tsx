@@ -1,4 +1,4 @@
-  import { Clock, Eye, EyeOff, Package } from "lucide-react";
+import { Clock, Package } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { MetricCard } from "@/components/dashboard/metric-card";

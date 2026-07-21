@@ -5,7 +5,7 @@ const sections = [
   {
     title: "1. Identidad de la plataforma",
     body: [
-      "MSM my store es la plataforma principal operada en msmmystore.com. Dentro del sistema, el modulo operativo puede llamarse MSM Marketplace, pero la experiencia publica para clientes, vendedores y administradores se presenta bajo la marca MSM my store.",
+      "MSM my store opera este marketplace en marketplace.msmmystore.com. Dentro del sistema, el modulo operativo puede llamarse MSM Marketplace, pero la experiencia publica para clientes, vendedores y administradores se presenta bajo la marca MSM my store.",
       "MSM my store ofrece tecnologia, organizacion digital, gestion de ordenes, control de pagos, ledger financiero, auditoria operativa, canales de soporte y herramientas de confianza para facilitar compras destinadas a receptores dentro de Cuba."
     ]
   },

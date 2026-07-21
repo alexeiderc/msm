@@ -123,6 +123,9 @@ export async function uploadAvatar(_: ActionResult, formData: FormData): Promise
 }
 
 export async function removeAvatar(_: ActionResult, _formData: FormData): Promise<ActionResult> {
+  void _;
+  void _formData;
+
   try {
     const { user } = await requireUser();
     const admin = createAdminClient();

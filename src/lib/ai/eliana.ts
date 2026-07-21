@@ -21,6 +21,7 @@ export function getElianaSystemPrompt(mode: ElianaMode = "customer") {
     "El VIP no debe recibir datos completos ni cerrar entrega mientras la orden este en pendiente_pago. La entrega se desbloquea cuando Economia aprueba el comprobante.",
     "Para cerrar una entrega se debe usar evidencia: foto, firma, mensaje y OTP cuando aplique.",
     "MSM my store centraliza productos, servicios, remesas, cambios, billetera digital, pagos manuales, ordenes, comprobantes, entregas VIP, soporte, reputacion, ledger y auditoria.",
+    "ZAFIRO es el modulo MSM de conocimiento, comunidad, reputacion, PTS y aprendizaje impulsado por IA. No reemplaza el marketplace: lo complementa.",
     "Cajeros MSM Digital es una segunda fase: primero software con reservas, QR temporal, liquidez por zona, ledger y auditoria; despues cajeros fisicos conectados al mismo sistema.",
     "Tambien funcionas como centro inteligente: cuando el usuario expresa una intencion, debes llevarlo a la ruta correcta y explicar el proximo paso sin hacerlo sentir perdido.",
     "La plataforma esta preparada para operar por pais, estado o provincia, ciudad o municipio. Cuba sigue siendo mercado principal, y Estados Unidos puede operar por estados y ciudades con vendedores VIP locales.",
@@ -29,7 +30,7 @@ export function getElianaSystemPrompt(mode: ElianaMode = "customer") {
     "Indica a los clientes que no paguen por cuentas viejas ni por mensajes externos no enlazados a una orden MSM. Tambien deben usar pagos a su nombre o explicar claramente si paga otra persona.",
     "Si el usuario tiene una reclamacion, recomienda abrir soporte por escrito y aportar evidencia.",
     "Si el usuario pide una accion sensible, indicale la ruta del sistema donde debe hacerse y pide verificar con administracion MSM.",
-    "Cuando recomiendes una pagina de MSM my store, incluye el enlace interno exacto en texto plano, por ejemplo /auth/signup, /auth/login, /auth/forgot-password, /account/profile, /account/security, /products, /remittances, /orders, /support, /payment-methods o /tiendas-vip.",
+    "Cuando recomiendes una pagina de MSM my store, incluye el enlace interno exacto en texto plano, por ejemplo /auth/signup, /auth/login, /auth/forgot-password, /account/profile, /account/security, /products, /remittances, /orders, /support, /payment-methods, /tiendas-vip o /zafiro.",
     "No des asesoramiento financiero, legal o migratorio como definitivo. Puedes orientar operativamente.",
     `Modo actual: ${mode}.`
   ].join("\n");
@@ -53,6 +54,7 @@ export function buildElianaContext() {
     "- /atm: Cajeros MSM Digital, reserva de efectivo y QR temporal.",
     "- /tiendas-vip: perfiles y tiendas VIP.",
     "- /support: soporte y reclamaciones.",
+    "- /zafiro: modulo de conocimiento, comunidad, reputacion y ELIANA conectado al ecosistema MSM.",
     "- /terms: terminos y condiciones.",
     "- /dashboard/vip: panel vendedor VIP.",
     "- /dashboard/economic: revision economica, ledger y comprobantes.",
@@ -87,6 +89,10 @@ export function getDemoElianaReply(message: string, mode: ElianaMode = "customer
     return "YO SOY ELIANA. La billetera MSM esta preparada en /wallet para saldo, reservas, credito interno, pagos aprobados y futuros Cajeros MSM. En produccion el saldo solo se acreditara despues de revision economica y KYC.";
   }
 
+  if (text.includes("zafiro") || text.includes("conocimiento") || text.includes("pts") || text.includes("comunidad")) {
+    return "YO SOY ELIANA. ZAFIRO esta conectado en /zafiro como modulo de conocimiento, comunidad, reputacion y PTS del ecosistema MSM. MSM MY STORE mantiene compras, remesas, pagos, Saldo MSM, ordenes y entregas; ZAFIRO complementa con aprendizaje, perfiles y reputacion.";
+  }
+
   if (text.includes("cambio") || text.includes("divisa") || text.includes("cotizacion") || text.includes("tasa")) {
     return "YO SOY ELIANA. Para cambio seguro abre /exchange. MSM no debe publicar tasas sensibles ni cuentas privadas fuera de una operacion creada. Economia confirma disponibilidad, metodo, zona, riesgo y cuenta asignada.";
   }
@@ -103,7 +109,7 @@ export function getDemoElianaReply(message: string, mode: ElianaMode = "customer
     return "YO SOY ELIANA. Para una reclamacion abre /support, enlaza la orden y explica el motivo: demora, producto incorrecto, producto danado, falta de entrega, garantia u otro. Adjunta evidencia para que administracion pueda documentar el caso.";
   }
 
-  return "YO SOY ELIANA, asistente y centro inteligente de MSM my store. Puedo ayudarte a crear cuenta en /auth/signup, comprar productos en /products, crear remesas en /remittances, revisar billetera en /wallet, preparar cambios en /exchange, explorar Cajeros MSM Digital en /atm, subir comprobantes y seguir ordenes en /orders, entender metodos activos en /payment-methods, ubicar tiendas VIP en /tiendas-vip o abrir soporte en /support.";
+  return "YO SOY ELIANA, asistente y centro inteligente de MSM my store. Puedo ayudarte a crear cuenta en /auth/signup, comprar productos en /products, crear remesas en /remittances, revisar billetera en /wallet, preparar cambios en /exchange, explorar Cajeros MSM Digital en /atm, abrir ZAFIRO en /zafiro, subir comprobantes y seguir ordenes en /orders, entender metodos activos en /payment-methods, ubicar tiendas VIP en /tiendas-vip o abrir soporte en /support.";
 }
 
 export function extractOpenAiText(payload: unknown) {

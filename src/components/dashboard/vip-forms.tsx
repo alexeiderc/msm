@@ -167,11 +167,12 @@ export function ProductToggleForm({ productId, isActive }: { productId: string; 
   const [state, formAction, pending] = useActionState(toggleProductActive, emptyActionResult);
 
   return (
-    <form action={formAction}>
+    <form action={formAction} className="grid gap-1">
       <input type="hidden" name="productId" value={productId} />
       <Button type="submit" disabled={pending} className="min-h-8 min-w-[90px] px-2 text-xs">
         {pending ? "..." : isActive ? "Desactivar" : "Activar"}
       </Button>
+      <ActionMessage state={state} />
     </form>
   );
 }

@@ -23,6 +23,10 @@ import {
   RotateCcw,
   Package,
   TrendingUp,
+  Sparkles,
+  Eye,
+  BookOpen,
+  Lock,
 } from "lucide-react";
 import type { UserRole } from "@/types/domain";
 import { useState } from "react";
@@ -73,6 +77,15 @@ const nav: NavCategory[] = [
     label: "Ejecutivo",
     items: [
       { label: "Don Miguel", href: "/dashboard/don-miguel", icon: BarChart3, roles: ["administrador", "administrador_economico", "superadmin"] },
+    ],
+  },
+  {
+    label: "La Maquina del Futuro",
+    items: [
+      { label: "Dashboard MF", href: "/dashboard/maquina-del-futuro", icon: Sparkles },
+      { label: "Visiones", href: "/dashboard/maquina-del-futuro/visions", icon: Eye },
+      { label: "Investor Room", href: "/dashboard/maquina-del-futuro/investor-room", icon: Lock },
+      { label: "Libro", href: "/dashboard/maquina-del-futuro/book", icon: BookOpen },
     ],
   },
   {

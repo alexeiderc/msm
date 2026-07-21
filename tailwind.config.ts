@@ -16,6 +16,17 @@ export default {
           cloud: "#F7F9FB",
           line: "#E6E7E8",
           silver: "#D7E5F2"
+        },
+        futura: {
+          void: "#0A0E1A",
+          deep: "#0F1629",
+          glow: "#6C5CE7",
+          aura: "#A29BFE",
+          pulse: "#FD79A8",
+          ember: "#FDCB6E",
+          mint: "#00CEC9",
+          frost: "#DFE6E9",
+          cosmic: "#2D3436"
         }
       },
       boxShadow: {

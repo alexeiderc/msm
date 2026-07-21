@@ -93,6 +93,7 @@ export async function sendWhatsAppCart(input: WhatsAppCartInput) {
     whatsapp_number: defaultWhatsApp,
     status: "enviado",
     admin_link: adminLink,
+    admin_notes: messageBody,
   });
 
   if (insertError) throw new Error("Error al guardar el carrito: " + insertError.message);

@@ -37,7 +37,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
         setHasCartItems(true);
       }
     } catch {}
-  }, []);
+  }, [setHasCartItems]);
 
   function handleProvinceChange(nextProvince: string) {
     const nextMunicipalities = getMunicipalitiesForProvince(nextProvince);
@@ -112,10 +112,14 @@ export function CheckoutForm({ productId }: { productId?: string }) {
 
         <div className="rounded-lg border border-msm-line bg-slate-50 p-4">
           <h2 className="flex items-center gap-2 text-base font-bold">
-            <WalletCards size={18} /> Pago dentro de MSM
+            <WalletCards size={18} /> Datos de contacto y pago
           </h2>
 
           <div className="mt-4 grid gap-4">
+            <label className="space-y-1 text-sm font-semibold">
+              Correo electronico *
+              <Input name="customerEmail" type="email" required placeholder="tucorreo@ejemplo.com" />
+            </label>
             <label className="space-y-1 text-sm font-semibold">
               Cupon de descuento (opcional)
               <div className="flex gap-2">

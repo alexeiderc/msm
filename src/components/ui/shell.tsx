@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Bot, CircleDollarSign, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards } from "lucide-react";
+import { Bot, CircleDollarSign, ExternalLink, Gem, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards, Sparkles } from "lucide-react";
 import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LowDataModeToggle } from "@/components/performance/low-data-mode";
 import { CartCount } from "@/components/cart/cart-count";
 import { MobileShell } from "@/components/ui/mobile-shell";
+import { zafiroModule } from "@/lib/zafiro-sync";
 
 const navItems = [
   ["Inicio", "/", Home],
@@ -12,11 +13,14 @@ const navItems = [
   ["Remesas", "/remittances", CircleDollarSign],
   ["Cajeros", "/atm", QrCode],
   ["Billetera", "/wallet", WalletCards],
+  ["ZAFIRO", "/zafiro", Gem],
+  ["La Maquina", "/maquina-del-futuro", Sparkles],
   ["YO SOY ELIANA", "/eliana", Bot]
 ] as const;
 
 const helpLinks = [
   ["YO SOY ELIANA IA", "/eliana"],
+  ["La Maquina del Futuro", "/maquina-del-futuro"],
   ["Quienes somos", "/quienes-somos"],
   ["Centro de ayuda", "/help"],
   ["Crear cuenta", "/auth/signup"],
@@ -25,6 +29,7 @@ const helpLinks = [
   ["Cambio", "/exchange"],
   ["Cajeros MSM", "/atm"],
   ["Billetera", "/wallet"],
+  ["ZAFIRO", "/zafiro"],
   ["Tiendas VIP", "/tiendas-vip"],
   ["Soporte", "/support"],
   ["Terminos", "/terms"],
@@ -37,12 +42,52 @@ const panelLinks = [
   ["VIP", "/dashboard/vip"],
   ["Admin", "/dashboard/admin"],
   ["Economia", "/dashboard/economic"],
-  ["Don Miguel", "/dashboard/don-miguel"]
+  ["Don Miguel", "/dashboard/don-miguel"],
+  ["La Maquina del Futuro", "/dashboard/maquina-del-futuro"]
 ] as const;
+
+function ZafiroSponsorBar() {
+  return (
+    <section className="border-b border-blue-300/20 bg-msm-midnight text-white">
+      <div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <Link href="/zafiro" className="group flex min-w-0 items-center gap-2.5">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-msm-blue text-white shadow-[0_8px_24px_rgba(25,123,210,0.35)]">
+            <Gem size={17} />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[11px] font-black uppercase tracking-[0.18em] text-blue-100">
+              Publicidad oficial
+            </span>
+            <span className="block truncate text-sm font-black text-white sm:text-base">
+              Sponsor ZAFIRO: conocimiento, reputacion y comunidad dentro del ecosistema MSM
+            </span>
+          </span>
+        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/zafiro"
+            className="rounded-md border border-white/15 bg-white/10 px-3 py-2 text-xs font-black text-white transition hover:bg-white/15"
+          >
+            Ver modulo
+          </Link>
+          <a
+            href={zafiroModule.sponsorUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden items-center gap-1 rounded-md bg-white px-3 py-2 text-xs font-black text-msm-midnight transition hover:bg-blue-50 sm:inline-flex"
+          >
+            Sponsors <ExternalLink size={13} />
+          </a>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-msm-cloud">
+      <ZafiroSponsorBar />
       <header className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/92 text-msm-ink shadow-[0_8px_28px_rgba(7,17,30,0.06)] backdrop-blur md:block">
         <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-4">
           <div className="flex items-center gap-2.5">
@@ -68,7 +113,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </label>
             </form>
             <nav className="hidden shrink-0 items-center gap-1 md:flex">
-              {navItems.slice(1, 5).map(([label, href]) => (
+              {navItems.slice(1, 6).map(([label, href]) => (
                 <Link
                   key={href}
                   href={href}

@@ -1,0 +1,244 @@
+{
+  "common": {
+    "appName": "The Machine of the Future",
+    "appTagline": "Visualize the end. Write the vision. Build the beginning.",
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "generate": "Generate",
+    "generating": "Generating...",
+    "copied": "Copied!",
+    "copyLink": "Copy Link",
+    "viewPublic": "View public page",
+    "noResults": "No results found",
+    "unauthorized": "Unauthorized",
+    "internalError": "Internal server error",
+    "notFound": "Not found"
+  },
+  "nav": {
+    "home": "Home",
+    "products": "Products",
+    "remittances": "Remittances",
+    "atm": "ATM",
+    "wallet": "Wallet",
+    "zafiro": "ZAFIRO",
+    "machine": "Machine",
+    "eliana": "YO SOY ELIANA",
+    "dashboard": "Dashboard",
+    "login": "Account"
+  },
+  "landing": {
+    "hero": "The Machine of the Future",
+    "heroSubtitle": "Visualize the end. Write the vision. Build the beginning.",
+    "heroDescription": "A platform of conscious temporal visualization: AI + meditation + writing + prototypes + faith.",
+    "heroDisclaimer": "This is not a machine to physically move your body through time. It is a machine to move consciousness, imagination, planning, simulation, memory, and creativity toward possible futures to return to the present with concrete instructions.",
+    "ctaDashboard": "Enter Dashboard",
+    "ctaInvestor": "View Investor Room",
+    "modules": "Platform Modules",
+    "scripture": "Biblical Foundation",
+    "prayer": "Anointing Prayer",
+    "company": "MSM MY STORE LLC",
+    "modulesList": {
+      "vision": "Vision Wizard",
+      "visionDesc": "Write your vision step by step and AI converts it into a complete plan.",
+      "meditation": "Guided Meditation",
+      "meditationDesc": "Enter the Machine of the Future, see the fulfilled end, and return with instructions.",
+      "interview": "Future Interview",
+      "interviewDesc": "Simulate an interview where you already achieved your invention.",
+      "inventor": "Inventor Mode",
+      "inventorDesc": "Generate technical prototypes, modules, stack, and roadmap.",
+      "investor": "Investor Room",
+      "investorDesc": "Create a private room for investors with pitch and documents.",
+      "book": "Automatic Book",
+      "bookDesc": "Write your book chapter by chapter with AI."
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Visualize the end. Write the vision. Build the beginning.",
+    "visionCount": "Visions Created",
+    "lastMeditation": "Latest Meditation",
+    "lastInterview": "Latest Interview",
+    "activePrototypes": "Active Prototypes",
+    "investorRoom": "Investor Room",
+    "book": "Book",
+    "declarations": "I AM Declarations",
+    "prayerVerses": "prayer verses",
+    "available": "Available",
+    "noMeditation": "No meditation",
+    "noInterview": "No interview",
+    "createVision": "Create New Vision",
+    "createVisionDesc": "Use the Vision Wizard to write your vision",
+    "investorRoomTitle": "Investor Room",
+    "investorRoomDesc": "Create a private room for investors",
+    "writeBook": "Write Book",
+    "writeBookDesc": "Generate chapters of The Machine of the Future",
+    "spiritualFoundation": "Spiritual Foundation"
+  },
+  "visions": {
+    "title": "My Visions",
+    "newVision": "New Vision",
+    "createTitle": "Create New Vision",
+    "createSubtitle": "Follow the steps to create your complete vision",
+    "noVisions": "No visions yet",
+    "noVisionsDesc": "Create your first vision using the Vision Wizard",
+    "createFirst": "Create Vision",
+    "types": {
+      "INVENTION": "Invention",
+      "TECHNOLOGY": "Technology",
+      "BUSINESS": "Business",
+      "BOOK": "Book",
+      "SPIRITUAL": "Spiritual",
+      "PERSONAL": "Personal"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "ACTIVE": "Active",
+      "COMPLETED": "Completed",
+      "ARCHIVED": "Archived"
+    },
+    "tabs": {
+      "summary": "Summary",
+      "meditation": "Meditation",
+      "interview": "Interview",
+      "prototype": "Prototype",
+      "pitch": "Pitch",
+      "declarations": "Declarations",
+      "prayer": "Prayer"
+    },
+    "problem": "Problem",
+    "solution": "Solution",
+    "targetUsers": "Target Users",
+    "finalScene": "Final Scene",
+    "notFound": "Vision not found"
+  },
+  "wizard": {
+    "title": "Vision Wizard",
+    "step": "Step",
+    "of": "of",
+    "steps": {
+      "name": "Name",
+      "idea": "Idea",
+      "problem": "Problem",
+      "finalScene": "Final Scene",
+      "users": "Users",
+      "technologies": "Technologies",
+      "team": "Team",
+      "investment": "Investment",
+      "faith": "Faith"
+    },
+    "placeholders": {
+      "name": "Name your vision",
+      "idea": "What do you want to create?",
+      "problem": "What problem does it solve?",
+      "finalScene": "How does it look when finished?",
+      "users": "Who does it help?",
+      "technologies": "What technologies do you imagine?",
+      "team": "What people are needed?",
+      "investment": "What investment is needed?",
+      "faith": "What spiritual foundation supports this?"
+    },
+    "generateVision": "Generate Vision",
+    "previous": "Previous"
+  },
+  "meditation": {
+    "title": "Guided Meditation",
+    "ready": "Ready",
+    "play": "Play",
+    "pause": "Pause",
+    "restart": "Restart",
+    "noMeditation": "No meditation generated yet",
+    "generateBtn": "Generate Meditation",
+    "generating": "Generating meditation..."
+  },
+  "interview": {
+    "title": "Future Interview",
+    "generated": "Generated",
+    "noInterview": "Simulate an interview from your achieved future",
+    "generateBtn": "Generate Interview",
+    "generating": "Generating interview..."
+  },
+  "declarations": {
+    "title": "I AM Declarations",
+    "placeholder": "Write your declaration...",
+    "categories": {
+      "YO_SOY": "I AM",
+      "DECLARO": "I DECLARE",
+      "RECIBO": "I RECEIVE",
+      "CONSTRUYO": "I BUILD"
+    },
+    "noDeclarations": "No declarations yet"
+  },
+  "prototype": {
+    "title": "Technical Prototype",
+    "generated": "Generated",
+    "name": "Name",
+    "description": "Description",
+    "modules": "Modules",
+    "roadmap": "Roadmap",
+    "risks": "Risks",
+    "noPrototype": "Convert your vision into a technical prototype",
+    "generateBtn": "Generate Prototype",
+    "generating": "Generating prototype..."
+  },
+  "pitch": {
+    "title": "Investor Pitch",
+    "generated": "Generated",
+    "noPitch": "Create a professional pitch for investors",
+    "generateBtn": "Generate Pitch",
+    "generating": "Generating pitch...",
+    "raised": "Target raise"
+  },
+  "investorRoom": {
+    "title": "Investor Room",
+    "subtitle": "Create private rooms to present your project to investors",
+    "newRoom": "New Room",
+    "createTitle": "Create Investor Room",
+    "roomName": "Room name",
+    "summary": "Executive summary",
+    "targetRaise": "Target raise (USD)",
+    "createBtn": "Create Room",
+    "cancel": "Cancel",
+    "noRooms": "No investor rooms",
+    "noRoomsDesc": "Create your first private room for investors",
+    "private": "Private Investor Room"
+  },
+  "book": {
+    "title": "The Machine of the Future - Book",
+    "subtitle": "Vision, word, faith, artificial intelligence and technology for a new era of inventions revealed by God",
+    "ready": "Ready",
+    "draft": "Draft"
+  },
+  "scriptures": {
+    "title": "Biblical Foundation of the Project",
+    "verses": {
+      "genesis": "In the beginning God created the heavens and the earth.",
+      "habakkuk": "Write the vision and make it plain on tablets, that he may run who reads it.",
+      "jeremiah": "Call to Me, and I will answer you, and show you great and mighty things, which you do not know.",
+      "john": "If I have told you earthly things, and you do not believe, how will you believe if I tell you heavenly things?"
+    }
+  },
+  "prayer": {
+    "title": "Anointing Prayer",
+    "text": "Beloved Father, in the powerful name of Jesus, we consecrate this project called THE MACHINE OF THE FUTURE. We declare that all technology, all artificial intelligence, all programming, all design, all connections, and all correct investment align with wisdom, truth, humility, excellence, and purpose. May this project not be for vanity, but to inspire, teach, create, visualize, order ideas, raise inventors, unite correct people, and open a new era of inventions guided by purpose. We declare that correct programmers, correct investors, correct engineers, correct designers, correct scientists, correct legal advisors, correct pilot clients, correct emails, correct meetings, and correct doors are arriving. Everything under obedience, order, transparency, security, and glory to God. Amen.",
+    "seal369": "Seal 369: vision, word, and ordered manifestation"
+  },
+  "investorPublic": {
+    "title": "Private Investor Room",
+    "interested": "Interested in investing?",
+    "contactTeam": "Contact The Machine of the Future team",
+    "email": "commercial@msmmystore.com",
+    "company": "MSM MY STORE LLC",
+    "pitchSection": "Project Pitch"
+  },
+  "footer": {
+    "help": "Help",
+    "panels": "Panels",
+    "copyright": "MSM My Store &copy; 2026"
+  }
+}

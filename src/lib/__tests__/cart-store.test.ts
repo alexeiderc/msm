@@ -1,8 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, beforeAll, vi } from "vitest";
 
-const STORAGE_KEY = "msm-cart";
-
 describe("cart-store", () => {
   beforeAll(() => {
     const store: Record<string, string> = {};

@@ -87,6 +87,13 @@ export const elianaCommandIntents: ElianaCommandIntent[] = [
     keywords: ["billetera", "wallet", "saldo", "credito", "recargar"]
   },
   {
+    id: "zafiro",
+    label: "ZAFIRO",
+    description: "Abre el modulo de conocimiento, comunidad y reputacion del ecosistema MSM.",
+    href: "/zafiro",
+    keywords: ["zafiro", "conocimiento", "pts", "comunidad", "sintonia", "life score"]
+  },
+  {
     id: "atm",
     label: "Cajeros MSM Digital",
     description: "Abre reservas de efectivo, QR temporal y Cajeros MSM Digital.",

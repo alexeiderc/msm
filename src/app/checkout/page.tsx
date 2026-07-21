@@ -110,27 +110,30 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
           <article className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
             <h2 className="text-lg font-bold">Confianza del cliente</h2>
             <div className="mt-3 grid gap-2 text-sm text-slate-600">
-              <span>Cuenta: {customerTrust.signedIn ? "iniciada" : "pendiente"}</span>
-              <span>KYC: {customerTrust.status}</span>
-              <span>Riesgo: {customerTrust.risk}</span>
+              <span>Cuenta: {customerTrust.signedIn ? "iniciada" : "datos requeridos al confirmar"}</span>
+              {customerTrust.signedIn ? <span>KYC: {customerTrust.status}</span> : null}
+              {customerTrust.signedIn ? <span>Riesgo: {customerTrust.risk}</span> : null}
             </div>
-            {!customerTrust.ready ? (
+            {customerTrust.signedIn && !customerTrust.ready ? (
               <div className="mt-4 rounded-md border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
                 Para pagar, primero completa KYC y acepta la politica contra reclamos falsos.
                 <div className="mt-2 flex flex-wrap gap-3 font-bold">
-                  <Link href="/auth/signup" className="text-msm-blue underline">
-                    Crear cuenta
-                  </Link>
                   <Link href="/account/kyc" className="text-msm-blue underline">
                     Completar KYC
                   </Link>
                 </div>
               </div>
-            ) : (
+            ) : null}
+            {customerTrust.signedIn && customerTrust.ready ? (
               <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm font-semibold text-msm-blue">
                 KYC basico enviado. Economia puede revisar comprobante y riesgo antes de liberar entrega.
               </p>
-            )}
+            ) : null}
+            {!customerTrust.signedIn ? (
+              <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm text-slate-600">
+                Puedes hacer el pedido sin iniciar sesion. Recibiras confirmacion por correo electronico.
+              </p>
+            ) : null}
           </article>
 
           <article className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">

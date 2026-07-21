@@ -149,3 +149,17 @@ html[data-lite="true"] .shadow-lift {
     transform: translateY(0) scale(1);
   }
 }
+
+.futura-glow {
+  background: radial-gradient(circle at 30% 30%, rgba(108, 92, 231, 0.3), transparent 60%);
+}
+
+.futura-void {
+  background: linear-gradient(180deg, #0A0E1A 0%, #0F1629 100%);
+}
+
+.futura-cosmic-panel {
+  border: 1px solid rgba(108, 92, 231, 0.15);
+  background: rgba(15, 22, 41, 0.8);
+  backdrop-filter: blur(12px);
+}

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Plus, Tags } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { CouponForm } from "@/components/dashboard/coupon-form";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Camera, Heart, ShieldCheck, UserRound } from "lucide-react";
+import { Camera, Heart, UserRound } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { AvatarUpload, ProfileForm } from "@/components/account/profile-forms";

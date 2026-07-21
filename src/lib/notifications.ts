@@ -87,22 +87,59 @@ export async function notifyOrderCreated(params: {
   customerPhone?: string | null;
   userId: string;
   orderId: string;
+  guestCheckout?: boolean;
 }) {
   const template = resolveTemplate("order-created");
   if (!template) return;
   const subject = substitute(template.subject, { orderNumber: params.orderNumber });
   const body = substitute(template.body, { orderNumber: params.orderNumber });
 
-  if (params.customerEmail) {
-    await sendOrderReceipt({ to: params.customerEmail, orderNumber: params.orderNumber, total: "" }).catch(() => {});
-  }
+  if (!params.guestCheckout) {
+    if (params.customerEmail) {
+      await sendOrderReceipt({ to: params.customerEmail, orderNumber: params.orderNumber, total: "" }).catch(() => {});
+    }
 
-  if (params.customerPhone) {
-    await queueWhatsAppMessage({
-      to: params.customerPhone,
-      template: "order_created",
-      variables: { orderNumber: params.orderNumber }
-    }).catch(() => {});
+    if (params.customerPhone) {
+      await queueWhatsAppMessage({
+        to: params.customerPhone,
+        template: "order_created",
+        variables: { orderNumber: params.orderNumber }
+      }).catch(() => {});
+    }
+  } else {
+    const admin = createAdminClient();
+    const { data: globalSetting } = await admin
+      .from("settings")
+      .select("value")
+      .eq("key", "whatsapp_number")
+      .maybeSingle();
+
+    const defaultWhatsApp = globalSetting
+      ? (globalSetting.value as { number: string }).number
+      : "";
+
+    if (defaultWhatsApp) {
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+      const adminLink = `${siteUrl}/dashboard/orders/${params.orderId}`;
+      const messageBody = [
+        `🛒 *Nuevo pedido de invitado*`,
+        ``,
+        `*Numero de orden:* ${params.orderNumber}`,
+        params.customerEmail ? `*Email:* ${params.customerEmail}` : null,
+        params.customerPhone ? `*Telefono:* ${params.customerPhone}` : null,
+        ``,
+        `*Link de seguimiento:*`,
+        adminLink,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      await queueWhatsAppMessage({
+        to: defaultWhatsApp,
+        template: "custom",
+        variables: { message: messageBody }
+      }).catch(() => {});
+    }
   }
 
   try { await createAdminClient().from("notifications").insert({

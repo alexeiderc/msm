@@ -37,110 +37,155 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     data: { user }
   } = await supabase.auth.getUser();
 
+  let customerId = user?.id;
+  let customerProfile: Record<string, unknown> | null = null;
+  let isGuest = false;
+  let customerRisk: ReturnType<typeof calculateCustomerRisk>;
+
   if (!user) {
-    return { ok: false, message: "Inicia sesion para completar el checkout." };
-  }
+    isGuest = true;
+    customerRisk = { score: 0, level: "normal", reasons: [] };
+    const guestPassword = crypto.randomUUID().replace(/-/g, "").slice(0, 20);
+    const { data: authUser, error: authError } = await admin.auth.admin.createUser({
+      email: parsed.data.customerEmail,
+      password: guestPassword,
+      email_confirm: false
+    });
 
-  const { data: customerProfile } = await admin
-    .from("profiles")
-    .select("full_name,email,phone,country,address,payment_method_valid,customer_kyc_status,customer_risk_level,identity_document_type,identity_document_last4,payment_account_owner,chargeback_policy_accepted_at")
-    .eq("id", user.id)
-    .maybeSingle();
+    if (authError || !authUser.user) {
+      return { ok: false, message: "Error al preparar tu pedido. Intenta de nuevo." };
+    }
 
-  const customerReadyForCheckout = Boolean(
-    customerProfile?.full_name &&
-      customerProfile.phone &&
-      customerProfile.country &&
-      customerProfile.address &&
-      customerProfile.identity_document_type &&
-      customerProfile.identity_document_last4 &&
-      customerProfile.payment_account_owner &&
-      customerProfile.chargeback_policy_accepted_at
-  );
+    customerId = authUser.user.id;
 
-  if (!customerReadyForCheckout) {
-    return {
-      ok: false,
-      message:
-        "Antes de pagar debes completar KYC de cliente y aceptar la politica contra contracargos en /account/kyc."
+    const { error: profileError } = await admin.from("profiles").insert({
+      id: customerId,
+      email: parsed.data.customerEmail,
+      full_name: parsed.data.receiverFullName,
+      phone: parsed.data.receiverPhone || null,
+      role: "cliente",
+      status: "activo",
+      is_guest: true
+    });
+
+    if (profileError) {
+      return { ok: false, message: profileError.message };
+    }
+
+    customerProfile = {
+      full_name: parsed.data.receiverFullName,
+      email: parsed.data.customerEmail,
+      phone: parsed.data.receiverPhone,
+      country: parsed.data.paymentCountry,
+      customer_kyc_status: "pendiente",
+      customer_risk_level: "normal"
     };
-  }
+  } else {
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("full_name,email,phone,country,address,payment_method_valid,customer_kyc_status,customer_risk_level,identity_document_type,identity_document_last4,payment_account_owner,chargeback_policy_accepted_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    customerProfile = profile;
+    customerRisk = { score: 0, level: "normal", reasons: [] };
 
-  const [{ count: pendingOrderCount }, { count: fraudAlertCount }] = await Promise.all([
-    admin
-      .from("orders")
-      .select("id", { count: "exact", head: true })
-      .eq("customer_id", user.id)
-      .in("status", ["pendiente_pago", "incidencia"]),
-    admin
-      .from("fraud_alerts")
-      .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id)
-  ]);
-  const paymentOwnerMatches =
-    normalizeName(customerProfile?.full_name) === normalizeName(customerProfile?.payment_account_owner) ||
-    normalizeName(customerProfile?.full_name).includes(normalizeName(customerProfile?.payment_account_owner)) ||
-    normalizeName(customerProfile?.payment_account_owner).includes(normalizeName(customerProfile?.full_name));
-  const customerRisk = calculateCustomerRisk({
-    kycStatus: customerProfile?.customer_kyc_status,
-    riskLevel: customerProfile?.customer_risk_level,
-    paymentMethodValid: customerProfile?.payment_method_valid,
-    hasChargebackAcceptance: Boolean(customerProfile?.chargeback_policy_accepted_at),
-    paymentOwnerMatches,
-    pendingOrders: pendingOrderCount ?? 0,
-    fraudAlerts: fraudAlertCount ?? 0
-  });
+    if (customerProfile) {
+      const customerReadyForCheckout = Boolean(
+        (customerProfile as Record<string, unknown>)?.full_name &&
+          (customerProfile as Record<string, unknown>).phone &&
+          (customerProfile as Record<string, unknown>).country &&
+          (customerProfile as Record<string, unknown>).address &&
+          (customerProfile as Record<string, unknown>).identity_document_type &&
+          (customerProfile as Record<string, unknown>).identity_document_last4 &&
+          (customerProfile as Record<string, unknown>).payment_account_owner &&
+          (customerProfile as Record<string, unknown>).chargeback_policy_accepted_at
+      );
 
-  await admin
-    .from("profiles")
-    .update({
-      customer_risk_score: customerRisk.score,
-      customer_risk_level: customerRisk.level,
-      customer_risk_reasons: customerRisk.reasons,
-      customer_last_risk_review_at: new Date().toISOString()
-    })
-    .eq("id", user.id);
-
-  if (customerRisk.level === "alto" || customerRisk.level === "bloqueado") {
-    await admin.from("fraud_alerts").insert({
-      user_id: user.id,
-      type: "cliente_riesgo_checkout",
-      severity: customerRisk.level === "bloqueado" ? "critica" : "alta",
-      message: "Cliente con riesgo elevado intento crear una orden.",
-      metadata: {
-        score: customerRisk.score,
-        level: customerRisk.level,
-        reasons: customerRisk.reasons
+      if (!customerReadyForCheckout) {
+        return {
+          ok: false,
+          message:
+            "Antes de pagar debes completar KYC de cliente y aceptar la politica contra contracargos en /account/kyc."
+        };
       }
-    });
-  }
 
-  if (
-    customerProfile?.customer_kyc_status === "rechazado" ||
-    customerProfile?.customer_risk_level === "bloqueado" ||
-    customerRisk.level === "bloqueado"
-  ) {
-    await admin.from("fraud_alerts").insert({
-      user_id: user.id,
-      type: "cliente_kyc_bloqueado_checkout",
-      severity: "alta",
-      message: "Cliente con KYC rechazado o bloqueado intento crear una orden.",
-      metadata: {
-        customerKycStatus: customerProfile?.customer_kyc_status,
-        customerRiskLevel: customerProfile?.customer_risk_level
+      const [{ count: pendingOrderCount }, { count: fraudAlertCount }] = await Promise.all([
+        admin
+          .from("orders")
+          .select("id", { count: "exact", head: true })
+          .eq("customer_id", user.id)
+          .in("status", ["pendiente_pago", "incidencia"]),
+        admin
+          .from("fraud_alerts")
+          .select("id", { count: "exact", head: true })
+          .eq("user_id", user.id)
+      ]);
+      const paymentOwnerMatches =
+        normalizeName((customerProfile as Record<string, unknown>).full_name as string) === normalizeName((customerProfile as Record<string, unknown>).payment_account_owner as string) ||
+        normalizeName((customerProfile as Record<string, unknown>).full_name as string).includes(normalizeName((customerProfile as Record<string, unknown>).payment_account_owner as string)) ||
+        normalizeName((customerProfile as Record<string, unknown>).payment_account_owner as string).includes(normalizeName((customerProfile as Record<string, unknown>).full_name as string));
+      customerRisk = calculateCustomerRisk({
+        kycStatus: (customerProfile as Record<string, unknown>).customer_kyc_status as string,
+        riskLevel: (customerProfile as Record<string, unknown>).customer_risk_level as string,
+        paymentMethodValid: Boolean((customerProfile as Record<string, unknown>).payment_method_valid),
+        hasChargebackAcceptance: Boolean((customerProfile as Record<string, unknown>).chargeback_policy_accepted_at),
+        paymentOwnerMatches,
+        pendingOrders: pendingOrderCount ?? 0,
+        fraudAlerts: fraudAlertCount ?? 0
+      });
+
+      await admin
+        .from("profiles")
+        .update({
+          customer_risk_score: customerRisk.score,
+          customer_risk_level: customerRisk.level,
+          customer_risk_reasons: customerRisk.reasons,
+          customer_last_risk_review_at: new Date().toISOString()
+        })
+        .eq("id", user.id);
+
+      if (customerRisk.level === "alto" || customerRisk.level === "bloqueado") {
+        await admin.from("fraud_alerts").insert({
+          user_id: user.id,
+          type: "cliente_riesgo_checkout",
+          severity: customerRisk.level === "bloqueado" ? "critica" : "alta",
+          message: "Cliente con riesgo elevado intento crear una orden.",
+          metadata: {
+            score: customerRisk.score,
+            level: customerRisk.level,
+            reasons: customerRisk.reasons
+          }
+        });
       }
-    });
-    await admin.from("audit_logs").insert({
-      actor_id: user.id,
-      action: "fraud.cliente_kyc_bloqueado_checkout",
-      entity: "profiles",
-      entity_id: user.id,
-      after: {
-        customerKycStatus: customerProfile?.customer_kyc_status,
-        customerRiskLevel: customerProfile?.customer_risk_level
+
+      if (
+        (customerProfile as Record<string, unknown>).customer_kyc_status === "rechazado" ||
+        (customerProfile as Record<string, unknown>).customer_risk_level === "bloqueado" ||
+        customerRisk.level === "bloqueado"
+      ) {
+        await admin.from("fraud_alerts").insert({
+          user_id: user.id,
+          type: "cliente_kyc_bloqueado_checkout",
+          severity: "alta",
+          message: "Cliente con KYC rechazado o bloqueado intento crear una orden.",
+          metadata: {
+            customerKycStatus: (customerProfile as Record<string, unknown>).customer_kyc_status,
+            customerRiskLevel: (customerProfile as Record<string, unknown>).customer_risk_level
+          }
+        });
+        await admin.from("audit_logs").insert({
+          actor_id: user.id,
+          action: "fraud.cliente_kyc_bloqueado_checkout",
+          entity: "profiles",
+          entity_id: user.id,
+          after: {
+            customerKycStatus: (customerProfile as Record<string, unknown>).customer_kyc_status,
+            customerRiskLevel: (customerProfile as Record<string, unknown>).customer_risk_level
+          }
+        });
+        return { ok: false, message: "Esta cuenta necesita revision de MSM antes de crear nuevas ordenes." };
       }
-    });
-    return { ok: false, message: "Esta cuenta necesita revision de MSM antes de crear nuevas ordenes." };
+    }
   }
 
   const quantity = parsed.data.quantity || 1;
@@ -204,7 +249,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
   }
 
   const discountSubtotal = Number((subtotal - discountAmount).toFixed(2));
-  const taxResult = await getTaxForLocation(customerProfile?.country ?? "Global");
+  const taxResult = await getTaxForLocation((customerProfile?.country as string) ?? "Global");
   const taxAmount = taxResult ? Number((discountSubtotal * (taxResult.rate / 100)).toFixed(2)) : 0;
   const storeProvince = Array.isArray(productRelations.stores) ? productRelations.stores[0]?.province : productRelations.stores?.province;
   const storeMunicipality = Array.isArray(productRelations.stores) ? productRelations.stores[0]?.municipality : productRelations.stores?.municipality;
@@ -218,11 +263,15 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
   let walletBeforeBalance = 0;
   const paymentMode = parsed.data.paymentMode;
 
+  if (isGuest && paymentMode === "saldo_msm") {
+    return { ok: false, message: "Los pedidos de invitados usan pago manual. Usa Saldo MSM si inicias sesion." };
+  }
+
   if (paymentMode === "saldo_msm") {
     const { data: wallet } = await admin
       .from("wallet_accounts")
       .select("id,balance,status,risk_hold")
-      .eq("user_id", user.id)
+      .eq("user_id", user!.id)
       .eq("currency", parsed.data.paymentCurrency)
       .maybeSingle();
 
@@ -250,14 +299,14 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
     if (method?.status !== "activo") {
       await admin.from("fraud_alerts").insert({
-        user_id: user.id,
+        user_id: customerId!,
         type: "metodo_pausado",
         severity: "alta",
         message: "El comprador intento crear una orden con un metodo no activo.",
         metadata: { paymentMethodId: parsed.data.paymentMethodId, status: method?.status }
       });
       await admin.from("audit_logs").insert({
-        actor_id: user.id,
+        actor_id: customerId!,
         action: "fraud.metodo_pausado",
         entity: "payment_methods",
         entity_id: parsed.data.paymentMethodId,
@@ -268,7 +317,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
     if (method.country !== parsed.data.paymentCountry || method.currency !== parsed.data.paymentCurrency) {
       await admin.from("fraud_alerts").insert({
-        user_id: user.id,
+        user_id: customerId!,
         type: "pais_o_moneda_no_coincide",
         severity: "media",
         message: "El checkout intento usar un metodo con pais o moneda diferente a lo seleccionado.",
@@ -280,7 +329,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
         }
       });
       await admin.from("audit_logs").insert({
-        actor_id: user.id,
+        actor_id: customerId!,
         action: "fraud.pais_o_moneda_no_coincide",
         entity: "payment_methods",
         entity_id: parsed.data.paymentMethodId,
@@ -304,14 +353,14 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
     if (account && Number(account.received_today) + totalAmount > Number(account.daily_limit)) {
       await admin.from("fraud_alerts").insert({
-        user_id: user.id,
+        user_id: customerId!,
         type: "cuenta_supera_capacidad_diaria",
         severity: "media",
         message: "La cuenta de pago disponible superaria su limite diario.",
         metadata: { accountId: account.id, totalAmount, receivedToday: account.received_today }
       });
       await admin.from("audit_logs").insert({
-        actor_id: user.id,
+        actor_id: customerId!,
         action: "fraud.cuenta_supera_capacidad_diaria",
         entity: "payment_accounts",
         entity_id: account.id,
@@ -378,7 +427,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     .from("orders")
     .insert({
       order_number: orderNumber,
-      customer_id: user.id,
+      customer_id: customerId!,
       seller_id: sellerId ?? null,
       store_id: product.store_id,
       customer_risk_score: customerRisk.score,
@@ -433,7 +482,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
     await admin.from("coupon_usage").insert({
       coupon_id: couponId,
       order_id: order.id,
-      customer_id: user.id,
+      customer_id: customerId!,
       discount_amount: discountAmount
     });
     const { data: couponRow } = await admin.from("coupons").select("used_count").eq("id", couponId).maybeSingle();
@@ -450,14 +499,14 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
   await admin.from("terms_acceptances").insert({
     order_id: order.id,
-    user_id: user.id,
+    user_id: customerId!,
     version: "checkout-2026-06"
   });
 
   await admin.from("order_events").insert({
     order_id: order?.id,
     status: paymentMode === "saldo_msm" ? "pago_confirmado" : "pendiente_pago",
-    actor_id: user.id,
+    actor_id: customerId!,
       note: paymentMode === "saldo_msm"
         ? "Orden pagada con Saldo MSM desde checkout publico."
         : "Orden creada desde checkout publico.",
@@ -470,11 +519,11 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       }
   });
 
-  if (paymentMode === "saldo_msm") {
+  if (!isGuest && paymentMode === "saldo_msm") {
     const { data: wallet } = await admin
       .from("wallet_accounts")
       .select("id,balance")
-      .eq("user_id", user.id)
+      .eq("user_id", customerId!)
       .eq("currency", parsed.data.paymentCurrency)
       .maybeSingle();
 
@@ -489,7 +538,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
         .from("wallet_transactions")
         .insert({
           wallet_id: wallet.id,
-          user_id: user.id,
+          user_id: customerId!,
           type: "debito",
           status: "confirmado",
           amount: totalAmount,
@@ -507,7 +556,7 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
       }
 
       await admin.from("wallet_score_events").insert({
-        user_id: user.id,
+        user_id: customerId!,
         source: "saldo_msm",
         event_type: "compra_pagada",
         points: 2,
@@ -522,10 +571,11 @@ export async function createCheckoutOrder(_: ActionState, formData: FormData): P
 
   notifyOrderCreated({
     orderNumber,
-    customerEmail: customerProfile?.email,
-    customerPhone: customerProfile?.phone,
-    userId: user.id,
-    orderId: order.id
+    customerEmail: customerProfile?.email as string | undefined,
+    customerPhone: customerProfile?.phone as string | undefined,
+    userId: customerId!,
+    orderId: order.id,
+    guestCheckout: isGuest
   });
 
   return {
@@ -915,7 +965,7 @@ export async function createBatchCheckoutOrders(_: ActionResult, formData: FormD
       .from("orders")
       .insert({
         order_number: orderNumber,
-        customer_id: user.id,
+      customer_id: user.id,
         seller_id: sellerId,
         store_id: product.store_id,
         receiver_full_name: formData.get("receiverFullName") as string,

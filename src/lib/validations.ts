@@ -18,6 +18,7 @@ export const checkoutSchema = z.object({
   paymentCurrency: z.string().min(3, "Selecciona la moneda."),
   paymentMethodId: z.string().uuid("Selecciona un metodo de pago valido.").optional().or(z.literal("")),
   couponCode: z.string().max(50).optional(),
+  customerEmail: z.string().email("Correo electronico necesario para confirmar tu pedido."),
   legalAccepted: z.literal("on", {
     message: "Debes aceptar las politicas legales de MSM."
   })

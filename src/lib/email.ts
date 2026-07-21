@@ -27,13 +27,14 @@ export async function sendKycNotification(params: {
   reason?: string | null;
 }) {
   const isApproved = params.status === "aprobado";
+  const marketplaceUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://marketplace.msmmystore.com";
   const subject = isApproved
     ? "KYC aprobado — Ya puedes operar en MSM"
     : "KYC rechazado — MSM reviso tu identificacion";
 
   const html = isApproved
-    ? `<h2>Hola ${params.fullName ?? "usuario"}.</h2><p>Tu verificacion de identidad (KYC) fue <strong>aprobada</strong>.</p><p>Ya puedes realizar compras y operar sin restricciones en MSM my store.</p><p><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://beta.msmmystore.com"}/products" style="display:inline-block;background:#0066cc;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Ir a productos</a></p>`
-    : `<h2>Hola ${params.fullName ?? "usuario"}.</h2><p>Tu verificacion de identidad (KYC) fue <strong>rechazada</strong>.</p>${params.reason ? `<p>Motivo: ${params.reason}</p>` : ""}<p>Puedes volver a intentar en <a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://beta.msmmystore.com"}/account/kyc">/account/kyc</a>.</p>`;
+    ? `<h2>Hola ${params.fullName ?? "usuario"}.</h2><p>Tu verificacion de identidad (KYC) fue <strong>aprobada</strong>.</p><p>Ya puedes realizar compras y operar sin restricciones en MSM my store.</p><p><a href="${marketplaceUrl}/products" style="display:inline-block;background:#0066cc;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:bold;">Ir a productos</a></p>`
+    : `<h2>Hola ${params.fullName ?? "usuario"}.</h2><p>Tu verificacion de identidad (KYC) fue <strong>rechazada</strong>.</p>${params.reason ? `<p>Motivo: ${params.reason}</p>` : ""}<p>Puedes volver a intentar en <a href="${marketplaceUrl}/account/kyc">/account/kyc</a>.</p>`;
 
   return sendEmail({ to: params.to, subject, html });
 }

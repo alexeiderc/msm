@@ -21,6 +21,7 @@ const internalRouteLabels: Record<string, string> = {
   "/checkout": "Abrir checkout",
   "/help": "Abrir ayuda",
   "/eliana": "Abrir ELIANA",
+  "/zafiro": "Abrir ZAFIRO",
   "/dashboard/vip": "Abrir panel VIP",
   "/dashboard/economic": "Abrir panel economico",
   "/dashboard/admin": "Abrir panel admin"
@@ -33,6 +34,7 @@ export const elianaActionLinks = [
   ["/support", "Soporte"],
   ["/payment-methods", "Metodos"],
   ["/tiendas-vip", "Tiendas VIP"],
+  ["/zafiro", "ZAFIRO"],
   ["/auth/signup", "Crear cuenta"],
   ["/account/profile", "Mi perfil"]
 ] as const;

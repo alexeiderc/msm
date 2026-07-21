@@ -1,12 +1,24 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { PwaRegister } from "@/components/pwa/pwa-register";
 import "./globals.css";
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://marketplace.msmmystore.com";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "MSM my store",
   description: "Plataforma principal de MSM para productos, servicios, remesas, pagos, ordenes, vendedores VIP y entregas verificadas por pais y zona.",
   manifest: "/manifest.webmanifest",
-  themeColor: "#197BD2",
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: "MSM my store",
+    description: "Productos, servicios, remesas, pagos, ordenes y vendedores VIP en el ecosistema MSM.",
+    url: siteUrl,
+    siteName: "MSM my store",
+    type: "website"
+  },
   appleWebApp: {
     capable: true,
     title: "MSM my store",
@@ -16,6 +28,10 @@ export const metadata: Metadata = {
     icon: "/icons/msm-icon.svg",
     apple: "/icons/msm-icon.svg"
   }
+};
+
+export const viewport: Viewport = {
+  themeColor: "#197BD2"
 };
 
 const lowDataScript = `
