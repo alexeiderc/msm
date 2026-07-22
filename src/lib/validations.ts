@@ -44,8 +44,8 @@ export const resetPasswordSchema = z.object({
 
 export const signupSchema = z.object({
   fullName: z.string().min(3, "Escribe tu nombre completo."),
-  phone: z.string().min(7, "Escribe un telefono valido."),
-  country: z.string().min(2, "Indica tu pais.").default("Estados Unidos"),
+  phone: z.string().regex(/^\d{7,15}$/, "Escribe un telefono valido, sin repetir el prefijo."),
+  country: z.string().length(2, "Indica tu pais.").default("US"),
   email: z.string().email("Escribe un correo valido."),
   password: z.string().min(8, "La contrasena debe tener al menos 8 caracteres."),
   confirmPassword: z.string().min(8, "Confirma la contrasena."),

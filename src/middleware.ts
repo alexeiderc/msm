@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { getSupabasePublicConfig, hasSupabasePublicConfig } from "@/lib/supabase/config";
 import type { UserRole } from "@/types/domain";
 
 const protectedRoutes: Record<string, UserRole[]> = {
@@ -13,23 +14,12 @@ const protectedRoutes: Record<string, UserRole[]> = {
   "/wallet": ["cliente", "vendedor_vip", "administrador", "administrador_economico", "superadmin"]
 };
 
-function hasRealSupabaseConfig() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
-
-  return Boolean(
-    url &&
-      anonKey &&
-      !url.includes("example.supabase.co") &&
-      !anonKey.includes("placeholder") &&
-      !anonKey.includes("replace-with")
-  );
-}
-
 function createSupabaseClient(request: NextRequest, response: NextResponse) {
+  const { url, key } = getSupabasePublicConfig();
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -56,21 +46,36 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/beta", request.url));
   }
 
-  if (!hasRealSupabaseConfig()) {
+  const route = Object.keys(protectedRoutes).find((prefix) => pathname.startsWith(prefix));
+
+  if (!route) {
     return NextResponse.next({ request });
+  }
+
+  if (!hasSupabasePublicConfig()) {
+    const login = request.nextUrl.clone();
+    login.pathname = "/auth/login";
+    login.searchParams.set("next", pathname);
+    login.searchParams.set("error", "auth_unavailable");
+    return NextResponse.redirect(login);
   }
 
   const response = NextResponse.next({ request });
   const supabase = createSupabaseClient(request, response);
-  const {
-    data: { user }
-  } = await supabase.auth.getUser();
+  const authResult = await Promise.race([
+    supabase.auth.getUser(),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), 8000))
+  ]).catch(() => null);
 
-  const route = Object.keys(protectedRoutes).find((prefix) => pathname.startsWith(prefix));
-
-  if (!route) {
-    return response;
+  if (!authResult) {
+    const login = request.nextUrl.clone();
+    login.pathname = "/auth/login";
+    login.searchParams.set("next", pathname);
+    login.searchParams.set("error", "auth_unavailable");
+    return NextResponse.redirect(login);
   }
+
+  const user = authResult.data.user;
 
   if (!user) {
     const login = request.nextUrl.clone();

@@ -8,7 +8,8 @@ export function sanitizeRedirectPath(next: string | null | undefined, fallback =
 
 export const authRouteErrors: Record<string, string> = {
   cuenta_bloqueada: "Esta cuenta esta bloqueada. Contacta soporte MSM.",
-  auth_callback: "No se pudo validar el enlace. Solicita uno nuevo o inicia sesion."
+  auth_callback: "No se pudo validar el enlace. Solicita uno nuevo o inicia sesion.",
+  auth_unavailable: "La conexion segura esta tardando mas de lo normal. Intenta iniciar sesion nuevamente."
 };
 
 export function resolvePostAuthPath(next: string | null | undefined, status?: string | null, role?: string | null) {

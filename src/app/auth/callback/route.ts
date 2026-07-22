@@ -2,11 +2,14 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { resolvePostAuthPath, sanitizeRedirectPath } from "@/lib/auth/routing";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSupabasePublicConfig } from "@/lib/supabase/config";
 
 function createSupabaseClient(request: NextRequest, response: NextResponse) {
+  const { url, key } = getSupabasePublicConfig();
+
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    key,
     {
       cookies: {
         getAll() {

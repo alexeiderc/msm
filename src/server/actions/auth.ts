@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { resolvePostAuthPath } from "@/lib/auth/routing";
+import { getCountryByCode } from "@/lib/countries";
 import { loginSchema, passwordResetSchema, resetPasswordSchema, signupSchema } from "@/lib/validations";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ function signupErrorMessage(code?: string) {
     email_exists: "Ya existe una cuenta con este correo. Inicia sesion o recupera tu contrasena.",
     user_already_exists: "Ya existe una cuenta con este correo. Inicia sesion o recupera tu contrasena.",
     signup_disabled: "El registro esta temporalmente pausado. Contacta soporte MSM.",
-    over_email_send_rate_limit: "Se enviaron demasiadas solicitudes. Espera unos minutos y vuelve a probar.",
+    over_email_send_rate_limit: "El correo de confirmacion esta temporalmente ocupado. Tus datos estan bien; espera unos minutos antes de volver a probar.",
     weak_password: "La contrasena necesita mas seguridad. Usa mayusculas, minusculas, numeros y un simbolo."
   };
 
@@ -101,6 +102,15 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
     return { ok: false, message: parsed.error.issues[0]?.message ?? "Datos invalidos." };
   }
 
+  const country = getCountryByCode(parsed.data.country.toUpperCase());
+
+  if (!country) {
+    return { ok: false, message: "Selecciona un pais valido." };
+  }
+
+  const localPhone = parsed.data.phone.replace(/\D/g, "");
+  const phone = `${country.prefix}${localPhone}`;
+
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
     email: parsed.data.email,
@@ -109,14 +119,19 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
       emailRedirectTo: authCallbackUrl("/account/kyc"),
       data: {
         full_name: parsed.data.fullName,
-        phone: parsed.data.phone,
-        country: parsed.data.country,
+        phone,
+        country: country.code,
       }
     }
   });
 
   if (error) {
-    return { ok: false, message: signupErrorMessage(error.code) };
+    return {
+      ok: false,
+      message: signupErrorMessage(error.code),
+      code: error.code,
+      retryAfterSeconds: error.code === "over_email_send_rate_limit" ? 60 : undefined
+    };
   }
 
   const betaMode = process.env.BETA_MODE === "true";
@@ -128,8 +143,8 @@ export async function signup(_: ActionResult, formData: FormData): Promise<Actio
         id: data.user.id,
         email: parsed.data.email,
         full_name: parsed.data.fullName,
-        phone: parsed.data.phone,
-        country: parsed.data.country,
+        phone,
+        country: country.code,
         role: "cliente",
         status: betaMode ? "pausado" : "activo",
         preferred_language: "es",

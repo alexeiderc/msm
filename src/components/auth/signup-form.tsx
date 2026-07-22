@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, useMemo } from "react";
+import { useActionState, useEffect, useMemo, useState } from "react";
 import { Eye, EyeOff, CheckCircle2, XCircle } from "lucide-react";
 import { signup } from "@/server/actions/auth";
 import { emptyActionResult } from "@/types/actions";
@@ -64,10 +64,29 @@ export function SignupForm({ next }: { next?: string }) {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [selectedCountry, setSelectedCountry] = useState("US");
   const [localPhone, setLocalPhone] = useState("");
+  const [retrySeconds, setRetrySeconds] = useState(0);
 
   const country = countries.find((c) => c.code === selectedCountry);
   const passwordsMatch = confirmPassword.length > 0 && password === confirmPassword;
   const passwordsMismatch = confirmPassword.length > 0 && password !== confirmPassword;
+
+  useEffect(() => {
+    if (state.code !== "over_email_send_rate_limit") return;
+
+    setRetrySeconds(state.retryAfterSeconds ?? 60);
+    const timer = window.setInterval(() => {
+      setRetrySeconds((seconds) => {
+        if (seconds <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+
+        return seconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [state]);
 
   const inputBase =
     "block w-full rounded-xl border border-slate-300 bg-white px-4 text-sm font-semibold text-msm-ink outline-none transition placeholder:text-slate-400 focus:border-msm-blue focus:ring-2 focus:ring-blue-100 h-12 md:h-11 md:rounded-lg";
@@ -91,18 +110,17 @@ export function SignupForm({ next }: { next?: string }) {
             name="country"
             value={selectedCountry}
             onChange={(e) => setSelectedCountry(e.target.value)}
-            className={`${inputBase} appearance-none pl-10 pr-9`}
+            onInput={(e) => setSelectedCountry(e.currentTarget.value)}
+            autoComplete="country"
+            className={`${inputBase} appearance-none pr-9`}
             required
           >
             {countries.map((c) => (
               <option key={c.code} value={c.code}>
-                {c.name}
+                {c.flag} {c.name}
               </option>
             ))}
           </select>
-          <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-lg">
-            {country?.flag ?? ""}
-          </span>
           <svg
             className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
             fill="none" viewBox="0 0 24 24" stroke="currentColor"
@@ -120,6 +138,8 @@ export function SignupForm({ next }: { next?: string }) {
           <input
             name="phone"
             type="tel"
+            inputMode="tel"
+            autoComplete="tel-national"
             value={localPhone}
             onChange={(e) => setLocalPhone(e.target.value.replace(/\D/g, ""))}
             placeholder="5551234567"
@@ -203,6 +223,8 @@ export function SignupForm({ next }: { next?: string }) {
 
       {state.message ? (
         <div
+          role={state.ok ? "status" : "alert"}
+          aria-live="polite"
           className={
             state.ok
               ? "rounded-xl border border-blue-100 bg-blue-50 p-4 text-sm font-semibold leading-6 text-msm-blue md:rounded-lg"
@@ -216,16 +238,26 @@ export function SignupForm({ next }: { next?: string }) {
                 Validar cuenta
               </Link>
             </div>
+          ) : state.code === "over_email_send_rate_limit" ? (
+            <div className="mt-2">
+              <Link href="/support" className="underline underline-offset-4">
+                Contactar soporte MSM
+              </Link>
+            </div>
           ) : null}
         </div>
       ) : null}
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || retrySeconds > 0 || passwordsMismatch}
         className="flex h-12 w-full items-center justify-center rounded-xl bg-msm-blue text-sm font-extrabold text-white shadow-sm transition active:scale-[0.98] disabled:opacity-60 md:h-11 md:rounded-lg"
       >
-        {pending ? "Creando cuenta..." : "Crear cuenta"}
+        {pending
+          ? "Creando cuenta..."
+          : retrySeconds > 0
+            ? `Espera ${retrySeconds} s`
+            : "Crear cuenta"}
       </button>
 
       <p className="text-center text-sm font-semibold text-slate-500">
