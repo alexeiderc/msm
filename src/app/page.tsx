@@ -4,7 +4,7 @@ import {
   ArrowRightLeft,
   BadgeCheck,
   CircleDollarSign,
-  Gem,
+
   Headphones,
   Home as HomeIcon,
   Info,
@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
-import { ElianaCommandCenter } from "@/components/ai/eliana-command-center";
 import { ProductCard } from "@/components/marketplace/product-card";
 import { officialPublicProductsFallback, officialStoreSlug } from "@/lib/demo-msm-store";
 import { TrendingBar } from "@/components/mobile/trending-bar";
@@ -40,8 +39,7 @@ const homeCategories = [
   ["Remesas", "/remittances", CircleDollarSign],
   ["Cambio", "/exchange", ArrowRightLeft],
   ["Cajeros", "/atm", QrCode],
-  ["Tiendas VIP", "/tiendas-vip", BadgeCheck],
-  ["ZAFIRO", "/zafiro", Gem]
+  ["Tiendas VIP", "/tiendas-vip", BadgeCheck]
 ] as const;
 
 const trustItems = [
@@ -154,7 +152,6 @@ export default function Home() {
                   Ver tienda MSM
                 </Link>
               </div>
-              <ElianaCommandCenter compact />
             </div>
           </div>
         </section>
@@ -164,11 +161,11 @@ export default function Home() {
             <div>
               <Badge className="border-blue-200 bg-blue-50 text-msm-blue">Tienda oficial MSM</Badge>
               <h2 className="mt-3 text-2xl font-bold text-msm-ink">MSM my store - Segundo Frente, Santiago de Cuba</h2>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-700">
                 Esta es tu tienda oficial dentro del sistema: productos, servicios, remesas, zonas de entrega,
                 reputacion y perfil publico conectado al flujo de compra.
               </p>
-              <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold text-slate-600">
+              <div className="mt-3 flex flex-wrap gap-2 text-sm font-semibold text-slate-700">
                 <span className="inline-flex items-center gap-2"><Store size={16} /> Tienda oficial MSM</span>
                 <span className="inline-flex items-center gap-2"><MapPin size={16} /> Mayari Arriba y Segundo Frente</span>
                 <span className="inline-flex items-center gap-2"><ShieldCheck size={16} /> Super VIP</span>
@@ -188,7 +185,7 @@ export default function Home() {
             <div>
               <Badge className="border-blue-200 bg-blue-50 text-msm-blue">Catalogo por tienda y zona</Badge>
               <h2 className="mt-3 text-3xl font-bold text-msm-ink">Productos y servicios destacados</h2>
-              <p className="mt-2 text-slate-600">
+              <p className="mt-2 text-slate-700">
                 Productos publicados por perfiles VIP con provincia, municipio, zona de entrega y vendedor responsable.
               </p>
             </div>
@@ -222,54 +219,50 @@ export default function Home() {
                 <Icon size={20} />
               </span>
               <p className="mt-3 font-bold text-msm-ink">{title}</p>
-              <p className="mt-1 text-sm leading-6 text-slate-600">{detail}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-700">{detail}</p>
             </div>
           ))}
           <Link href="/payment-methods" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <CircleDollarSign className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Metodos activos</h3>
-            <p className="mt-1 text-sm text-slate-600">Consulta pais, metodo y estado sin exponer cuentas.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Metodos activos</h3>
+            <p className="mt-1 text-sm text-slate-700">Consulta pais, metodo y estado sin exponer cuentas.</p>
           </Link>
           <Link href="/quienes-somos" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <Info className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Quienes somos</h3>
-            <p className="mt-1 text-sm text-slate-600">Conoce la vision MSM: comercio, tecnologia, remesas, IA y comunidad.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Quienes somos</h3>
+            <p className="mt-1 text-sm text-slate-700">Conoce la vision MSM: comercio, tecnologia, remesas, IA y comunidad.</p>
           </Link>
           <Link href="/tiendas-vip" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <BadgeCheck className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Tiendas VIP y perfiles</h3>
-            <p className="mt-1 text-sm text-slate-600">MSM oficial y vendedores por provincia, municipio y reputacion.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Tiendas VIP y perfiles</h3>
+            <p className="mt-1 text-sm text-slate-700">MSM oficial y vendedores por provincia, municipio y reputacion.</p>
           </Link>
           <Link href="/support" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <Headphones className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Soporte centralizado</h3>
-            <p className="mt-1 text-sm text-slate-600">Reclamaciones por orden, evidencia y cierre documentado.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Soporte centralizado</h3>
+            <p className="mt-1 text-sm text-slate-700">Reclamaciones por orden, evidencia y cierre documentado.</p>
           </Link>
           <Link href="/remittances" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <CircleDollarSign className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Remesas MSM</h3>
-            <p className="mt-1 text-sm text-slate-600">Envios con revision economica, cuenta asignada y trazabilidad.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Remesas MSM</h3>
+            <p className="mt-1 text-sm text-slate-700">Envios con revision economica, cuenta asignada y trazabilidad.</p>
           </Link>
           <Link href="/wallet" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <WalletCards className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Billetera MSM</h3>
-            <p className="mt-1 text-sm text-slate-600">Saldo, reservas, pagos manuales y ledger en una cuenta digital.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Billetera MSM</h3>
+            <p className="mt-1 text-sm text-slate-700">Saldo, reservas, pagos manuales y ledger en una cuenta digital.</p>
           </Link>
           <Link href="/atm" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <QrCode className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Cajeros MSM Digital</h3>
-            <p className="mt-1 text-sm text-slate-600">Reserva de efectivo, QR temporal y futura red fisica MSM.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Cajeros MSM Digital</h3>
+            <p className="mt-1 text-sm text-slate-700">Reserva de efectivo, QR temporal y futura red fisica MSM.</p>
           </Link>
           <Link href="/exchange" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
             <ArrowRightLeft className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">Cambio seguro</h3>
-            <p className="mt-1 text-sm text-slate-600">Cotizaciones controladas sin publicar cuentas ni tasas sensibles.</p>
+            <h3 className="mt-3 font-bold text-msm-ink">Cambio seguro</h3>
+            <p className="mt-1 text-sm text-slate-700">Cotizaciones controladas sin publicar cuentas ni tasas sensibles.</p>
           </Link>
-          <Link href="/zafiro" className="rounded-lg border border-msm-line bg-white p-5 shadow-lift transition hover:-translate-y-0.5 hover:border-msm-blue">
-            <Gem className="text-msm-blue" size={24} />
-            <h3 className="mt-3 font-bold">ZAFIRO</h3>
-            <p className="mt-1 text-sm text-slate-600">Conocimiento, comunidad, reputacion y ELIANA conectados al ecosistema MSM.</p>
-          </Link>
+
         </section>
       </div>
     </AppShell>

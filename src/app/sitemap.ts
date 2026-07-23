@@ -15,8 +15,6 @@ const publicRoutes = [
   "/quienes-somos",
   "/support",
   "/terms",
-  "/eliana",
-  "/zafiro",
   "/vendedores/solicitud"
 ];
 

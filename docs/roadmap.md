@@ -6,7 +6,7 @@
 - Modelo de datos completo para marketplace, ordenes, KYC, ledger y auditoria.
 - Marketplace publico, checkout legal y paneles VIP/Admin/Economico.
 - Seed inicial de categorias, provincias y tienda demo.
-- PWA preparada, ELIANA centro inteligente, billetera demo, cambio demo y Cajeros MSM Digital demo.
+- PWA preparada, billetera demo, cambio demo y Cajeros MSM Digital demo.
 
 ## Fase 1
 

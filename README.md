@@ -10,8 +10,6 @@ MVP de `msmmystore.com` como plataforma principal MSM MY STORE para conectar com
 - Prisma para modelo, cliente tipado y seed
 - Zod para validaciones
 - Resend para correos transaccionales
-- Eliana IA como asistente inteligente configurable con OpenAI y modo demo local
-- Consola inteligente de ELIANA para entender intenciones y abrir rutas sin depender de IA externa
 - Cuenta publica para clientes y vendedores VIP con entrada visible desde perfiles y tienda oficial
 - KYC cliente con titular de pago, documento, aceptacion antifraude y preparacion para app externa
 - Riesgo por cliente, entrega bloqueada hasta pago aprobado, OTP y evidencia fuerte de entrega
@@ -45,7 +43,6 @@ RESEND_API_KEY=
 MSM_COMMERCIAL_EMAIL=commercial@msmmystore.com
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.5
-ELIANA_AI_ENABLED=true
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
 KYC_CUSTOMER_PROVIDER=manual_msm
 KYC_CUSTOMER_APP_URL=
@@ -103,8 +100,6 @@ npm run dev
 11. Admin revisa KYC, tiendas, productos, incidencias, reasignaciones y audit logs.
 12. Don Miguel revisa metricas ejecutivas en `/dashboard/don-miguel`.
 
-ELIANA aparece como asistente flotante, se oculta y vuelve a invitar al cliente cada cierto tiempo. Su funcion es empoderar al usuario: explicar el siguiente paso, abrir enlaces internos, recomendar pagar solo dentro de ordenes MSM y dirigir a soporte cuando haga falta. Tambien tiene una consola inteligente en Inicio y en `/eliana`: el cliente puede escribir una intencion como "quiero comprar en Segundo Frente" o "subir comprobante" y el sistema abre la ruta correcta.
-
 ## Perfiles VIP y tienda oficial
 
 Cada vendedor VIP tiene un perfil conectado a `stores`, con nombre comercial, propietario, compania, telefono, WhatsApp, correo, pais, provincia/estado, municipio/ciudad, zonas, categorias, productos, servicios, remesas, horario, capacidad diaria, garantia, estado, nivel y reputacion.
@@ -133,8 +128,7 @@ Los productos publicos solo aparecen si tienen tienda activa, vendedor, provinci
 - `/exchange`: cambio seguro en modo demo operativo.
 - `/wallet`: billetera digital MSM preparada para saldo, reservas y ledger.
 - `/atm`: Cajeros MSM Digital, reservas de efectivo y QR temporal.
-- `/eliana`: asistente inteligente MSM para clientes, vendedores VIP, economia y administracion.
-- `/quienes-somos`: vision publica de MSM MY STORE, que hacemos y ELIANA IA.
+- `/quienes-somos`: vision publica de MSM MY STORE.
 - `/orders`: seguimiento de ordenes.
 - `/account/kyc`: validacion del cliente y metodo de pago.
 - `/auth/signup`: crear cuenta de cliente o iniciar camino para vendedor VIP.
@@ -159,7 +153,6 @@ Los productos publicos solo aparecen si tienen tienda activa, vendedor, provinci
 - Configurar Supabase real, buckets privados y politicas Storage para evidencias/KYC.
 - Conectar app externa de KYC cliente y revisar casos de riesgo antes de beta publica.
 - Integrar pasarela de pago MSM y generacion final de factura PDF.
-- Conectar Eliana a datos reales por rol usando RLS, despues de validar permisos y privacidad.
 - Conectar billetera, cambio y Cajeros MSM Digital a Supabase con RLS, ledger y auditoria real.
 - Implementar WhatsApp provider real cuando se seleccione proveedor.
 - Convertir el flujo actual de compra por orden en carrito persistente multiproducto si la operacion lo requiere.
@@ -174,7 +167,6 @@ Ver tambien:
 - `docs/products-by-zone.md`
 - `docs/remittance-by-zone.md`
 - `docs/functional-audit.md`
-- `docs/eliana-ai.md`
 - `docs/global-market-expansion.md`
 - `docs/customer-kyc-antifraud.md`
 - `docs/delivery-risk-control.md`

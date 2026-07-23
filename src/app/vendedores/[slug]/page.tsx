@@ -157,8 +157,8 @@ export default async function VipPublicProfilePage({ params }: { params: Promise
           <article className="rounded-lg border border-blue-100 bg-white p-4 shadow-soft">
             <h2 className="font-bold">Cuenta y confianza</h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              Crea tu cuenta para guardar datos, seguir ordenes, subir comprobantes y recibir ayuda de
-              YO SOY ELIANA durante la compra.
+              Crea tu cuenta para guardar datos, seguir ordenes, subir comprobantes y recibir ayuda
+              durante la compra.
             </p>
             <div className="mt-4 grid gap-2">
               <Link

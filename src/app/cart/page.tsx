@@ -88,11 +88,11 @@ export default function CartPage() {
         <section className="mx-auto max-w-2xl px-4 py-12 pb-24 text-center">
           <CheckCircle className="mx-auto text-green-500" size={64} />
           <h1 className="mt-4 text-3xl font-bold">Pedido enviado por WhatsApp</h1>
-          <p className="mt-3 text-lg text-slate-600">
+          <p className="mt-3 text-lg text-slate-700">
             Hemos recibido tu pedido y lo hemos enviado a nuestro equipo para procesarlo.
           </p>
           <div className="mt-6 rounded-lg border border-msm-line bg-white p-6 shadow-soft">
-            <p className="text-sm text-slate-600">Usa este enlace para dar seguimiento a tu pedido:</p>
+            <p className="text-sm text-slate-700">Usa este enlace para dar seguimiento a tu pedido:</p>
             <a
               href={result.adminLink}
               className="mt-2 inline-block break-all text-msm-blue underline"
@@ -129,7 +129,7 @@ export default function CartPage() {
 
         {items.length === 0 ? (
           <article className="mt-6 rounded-lg border border-msm-line bg-white p-8 text-center shadow-soft">
-            <p className="text-slate-600">Tu carrito esta vacio.</p>
+            <p className="text-slate-700">Tu carrito esta vacio.</p>
             <Link
               href="/products"
               className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-msm-blue px-5 text-sm font-bold text-white"
@@ -157,21 +157,21 @@ export default function CartPage() {
                       <Link href={`/products/${item.slug}`} className="font-bold hover:text-msm-blue">
                         {item.name}
                       </Link>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-slate-700">
                         {item.currency} {item.price.toFixed(2)}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => { updateQuantity(item.productId, item.quantity - 1); refresh(); }}
-                        className="grid h-8 w-8 place-items-center rounded border text-slate-600 hover:bg-slate-100"
+                        className="grid h-8 w-8 place-items-center rounded border text-slate-700 hover:bg-slate-100"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="min-w-[2rem] text-center font-bold">{item.quantity}</span>
                       <button
                         onClick={() => { updateQuantity(item.productId, item.quantity + 1); refresh(); }}
-                        className="grid h-8 w-8 place-items-center rounded border text-slate-600 hover:bg-slate-100"
+                        className="grid h-8 w-8 place-items-center rounded border text-slate-700 hover:bg-slate-100"
                       >
                         <Plus size={14} />
                       </button>
@@ -192,13 +192,13 @@ export default function CartPage() {
 
             <div className="mt-6 flex flex-wrap items-center justify-between gap-4 rounded-lg border border-msm-line bg-white p-4 shadow-soft">
               <div>
-                <p className="text-sm text-slate-600">Total estimado</p>
+                <p className="text-sm text-slate-700">Total estimado</p>
                 <p className="text-2xl font-bold">${total.toFixed(2)} USD</p>
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
                   onClick={() => { clearCart(); refresh(); }}
-                  className="rounded-md border border-msm-line px-4 py-2 text-sm font-semibold text-slate-600"
+                  className="rounded-md border border-msm-line px-4 py-2 text-sm font-semibold text-slate-700"
                 >
                   Vaciar carrito
                 </button>
@@ -214,7 +214,7 @@ export default function CartPage() {
             {showForm && (
               <form onSubmit={handleSubmit} className="mt-6 rounded-lg border border-msm-line bg-white p-6 shadow-soft">
                 <h2 className="text-xl font-bold">Datos del pedido</h2>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-sm text-slate-700">
                   Completa tus datos para enviar el pedido a nuestro equipo por WhatsApp
                 </p>
 
@@ -336,7 +336,7 @@ export default function CartPage() {
                   <button
                     type="button"
                     onClick={() => setShowForm(false)}
-                    className="rounded-md border border-msm-line px-4 py-2 text-sm font-semibold text-slate-600"
+                    className="rounded-md border border-msm-line px-4 py-2 text-sm font-semibold text-slate-700"
                   >
                     Cancelar
                   </button>

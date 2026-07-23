@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { KeyRound, ShieldCheck } from "lucide-react";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
-import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 
 export default function ForgotPasswordPage() {
   return (
@@ -25,7 +24,6 @@ export default function ForgotPasswordPage() {
         </div>
         <ForgotPasswordForm />
       </section>
-      <ElianaFloatingAssistant />
     </main>
   );
 }

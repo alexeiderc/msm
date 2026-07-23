@@ -42,7 +42,7 @@ export function WalletLoadRequestForm({
         <label className="space-y-1 text-sm font-semibold">
           Metodo externo usado
           <Select name="paymentMethodId">
-            <option value="">Coordinar por WhatsApp / ELIANA</option>
+            <option value="">Coordinar por WhatsApp</option>
             {methods.map((method) => (
               <option key={method.id} value={method.id}>
                 {method.country} - {method.type} - {method.currency} ({method.status})

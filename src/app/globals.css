@@ -92,10 +92,6 @@ html[data-lite="true"] .msm-luminous-panel::before {
   display: none;
 }
 
-html[data-lite="true"] .eliana-intro-popover {
-  display: none;
-}
-
 html[data-lite="true"] .msm-luminous-panel {
   border-color: rgba(234, 246, 255, 0.16);
   background: rgba(255, 255, 255, 0.06);
@@ -140,29 +136,4 @@ html[data-lite="true"] .shadow-lift {
 :focus-visible {
   outline: 2px solid #197bd2;
   outline-offset: 2px;
-}
-
-@keyframes eliana-slide-in {
-  from {
-    opacity: 0;
-    transform: translateY(14px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.futura-glow {
-  background: radial-gradient(circle at 30% 30%, rgba(108, 92, 231, 0.3), transparent 60%);
-}
-
-.futura-void {
-  background: linear-gradient(180deg, #0A0E1A 0%, #0F1629 100%);
-}
-
-.futura-cosmic-panel {
-  border: 1px solid rgba(108, 92, 231, 0.15);
-  background: rgba(15, 22, 41, 0.8);
-  backdrop-filter: blur(12px);
 }

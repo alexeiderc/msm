@@ -23,6 +23,7 @@ const initialState: ActionState = {
 
 export function CheckoutForm({ productId }: { productId?: string }) {
   const [hasCartItems, setHasCartItems] = useReactState(false);
+  const [cartItemsValue, setCartItemsValue] = useReactState("[]");
   const action = hasCartItems ? createBatchCheckoutOrders : createCheckoutOrder;
   const [state, formAction, pending] = useActionState(action, initialState);
   const [province, setProvince] = useReactState("Santiago de Cuba");
@@ -34,10 +35,11 @@ export function CheckoutForm({ productId }: { productId?: string }) {
     try {
       const stored = sessionStorage.getItem("msm-checkout-items");
       if (stored) {
+        setCartItemsValue(stored);
         setHasCartItems(true);
       }
     } catch {}
-  }, [setHasCartItems]);
+  }, [setHasCartItems, setCartItemsValue]);
 
   function handleProvinceChange(nextProvince: string) {
     const nextMunicipalities = getMunicipalitiesForProvince(nextProvince);
@@ -49,89 +51,89 @@ export function CheckoutForm({ productId }: { productId?: string }) {
     <div className="rounded-lg border border-msm-line bg-white p-4 shadow-soft md:p-6">
       <div className="flex items-center gap-2">
         <MapPin className="text-msm-blue" size={22} />
-        <h1 className="text-2xl font-bold">Datos del receptor en Cuba</h1>
+        <h1 className="text-2xl font-bold text-msm-ink">Datos del receptor en Cuba</h1>
       </div>
 
       <form action={formAction} className="mt-6 grid gap-4">
         <input type="hidden" name="productId" value={productId ?? ""} />
         <input type="hidden" name="quantity" value="1" />
         {hasCartItems ? (
-          <input type="hidden" name="cartItems" value={sessionStorage.getItem("msm-checkout-items") ?? "[]"} />
+          <input type="hidden" name="cartItems" value={cartItemsValue} />
         ) : null}
         <input type="hidden" name="provinceId" value={demoProvinceId(province)} />
         <input type="hidden" name="municipalityId" value={demoMunicipalityId(province, municipality)} />
         <input type="hidden" name="receiverProvinceName" value={province} />
         <input type="hidden" name="receiverMunicipalityName" value={municipality} />
         <div className="grid gap-4 md:grid-cols-2">
-          <label className="space-y-1 text-sm font-semibold">
-            Nombre completo
-            <Input name="receiverFullName" required placeholder="Nombre y apellidos" />
-          </label>
-          <label className="space-y-1 text-sm font-semibold">
-            Telefono
-            <Input name="receiverPhone" required placeholder="+53 ..." />
-          </label>
-          <label className="space-y-1 text-sm font-semibold">
-            Provincia
-            <Select value={province} onChange={(event) => handleProvinceChange(event.target.value)} required>
-              {cubaLocations.map((location) => (
-                <option key={location.province} value={location.province}>
-                  {location.province}
-                </option>
-              ))}
-            </Select>
-          </label>
-          <label className="space-y-1 text-sm font-semibold">
-            Municipio
-            <Select value={municipality} onChange={(event) => setMunicipality(event.target.value)} required>
-              {municipalities.map((municipalityName) => (
-                <option key={municipalityName} value={municipalityName}>
-                  {municipalityName}
-                </option>
-              ))}
-            </Select>
-          </label>
+        <label className="space-y-1 text-sm font-semibold text-msm-ink">
+          Nombre completo
+          <Input name="receiverFullName" required placeholder="Nombre y apellidos" />
+        </label>
+        <label className="space-y-1 text-sm font-semibold text-msm-ink">
+          Telefono
+          <Input name="receiverPhone" required placeholder="+53 ..." />
+        </label>
+        <label className="space-y-1 text-sm font-semibold text-msm-ink">
+          Provincia
+          <Select value={province} onChange={(event) => handleProvinceChange(event.target.value)} required>
+            {cubaLocations.map((location) => (
+              <option key={location.province} value={location.province}>
+                {location.province}
+              </option>
+            ))}
+          </Select>
+        </label>
+        <label className="space-y-1 text-sm font-semibold text-msm-ink">
+          Municipio
+          <Select value={municipality} onChange={(event) => setMunicipality(event.target.value)} required>
+            {municipalities.map((municipalityName) => (
+              <option key={municipalityName} value={municipalityName}>
+                {municipalityName}
+              </option>
+            ))}
+          </Select>
+        </label>
         </div>
 
-        <label className="space-y-1 text-sm font-semibold">
-          Direccion
-          <Textarea name="address" required placeholder="Calle, numero, reparto, entre calles" />
-        </label>
-        <label className="space-y-1 text-sm font-semibold">
-          Referencias
-          <Input name="references" required placeholder="Color de casa, punto cercano, instrucciones" />
-        </label>
-        <label className="space-y-1 text-sm font-semibold">
-          Horario de entrega
-          <Input name="deliveryWindow" required placeholder="Ej. lunes a viernes, 9:00 a 13:00" />
-        </label>
-        <label className="space-y-1 text-sm font-semibold">
-          Nota opcional
-          <Textarea name="note" placeholder="Preferencias o aclaraciones para el VIP" />
-        </label>
+      <label className="space-y-1 text-sm font-semibold text-msm-ink">
+        Direccion
+        <Textarea name="address" required placeholder="Calle, numero, reparto, entre calles" />
+      </label>
+      <label className="space-y-1 text-sm font-semibold text-msm-ink">
+        Referencias (opcional)
+        <Input name="references" placeholder="Color de casa, punto cercano, instrucciones" />
+      </label>
+      <label className="space-y-1 text-sm font-semibold text-msm-ink">
+        Horario de entrega (opcional)
+        <Input name="deliveryWindow" placeholder="Ej. lunes a viernes, 9:00 a 13:00" />
+      </label>
+      <label className="space-y-1 text-sm font-semibold text-msm-ink">
+        Nota opcional
+        <Textarea name="note" placeholder="Preferencias o aclaraciones para el VIP" />
+      </label>
 
         <div className="rounded-lg border border-msm-line bg-slate-50 p-4">
-          <h2 className="flex items-center gap-2 text-base font-bold">
+          <h2 className="flex items-center gap-2 text-base font-bold text-msm-ink">
             <WalletCards size={18} /> Datos de contacto y pago
           </h2>
 
           <div className="mt-4 grid gap-4">
-            <label className="space-y-1 text-sm font-semibold">
+            <label className="space-y-1 text-sm font-semibold text-msm-ink">
               Correo electronico *
               <Input name="customerEmail" type="email" required placeholder="tucorreo@ejemplo.com" />
             </label>
-            <label className="space-y-1 text-sm font-semibold">
+            <label className="space-y-1 text-sm font-semibold text-msm-ink">
               Cupon de descuento (opcional)
               <div className="flex gap-2">
                 <Input name="couponCode" placeholder="CODIGO" className="uppercase" />
               </div>
             </label>
           </div>
-          <p className="mt-1 text-sm text-slate-600">
+          <p className="mt-1 text-sm text-slate-700">
             El metodo principal es Saldo MSM. Los metodos externos se usan para cargar saldo y Economia los aprueba.
           </p>
           <div className="mt-4 grid gap-3 md:grid-cols-2">
-            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold">
+            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold text-msm-ink">
               <input
                 className="mr-2"
                 type="radio"
@@ -145,7 +147,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
                 Se descuenta automaticamente si tienes saldo suficiente.
               </span>
             </label>
-            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold">
+            <label className="rounded-lg border border-msm-line bg-white p-3 text-sm font-semibold text-msm-ink">
               <input
                 className="mr-2"
                 type="radio"
@@ -161,7 +163,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
             </label>
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <label className="space-y-1 text-sm font-semibold">
+            <label className="space-y-1 text-sm font-semibold text-msm-ink">
               Pais
               <Select name="paymentCountry" required>
                 <option value="">Seleccionar</option>
@@ -171,7 +173,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
                 <option value="Global">Global</option>
               </Select>
             </label>
-            <label className="space-y-1 text-sm font-semibold">
+            <label className="space-y-1 text-sm font-semibold text-msm-ink">
               Moneda
               <Select name="paymentCurrency" required>
                 <option value="">Seleccionar</option>
@@ -181,7 +183,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
                 <option value="USDT">USDT</option>
               </Select>
             </label>
-            <label className="space-y-1 text-sm font-semibold">
+            <label className="space-y-1 text-sm font-semibold text-msm-ink">
               Metodo
               <Select name="paymentMethodId" required={paymentMode === "manual"}>
                 <option value="">Seleccionar</option>
@@ -194,7 +196,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
         </div>
 
         <div className="rounded-lg border border-msm-line bg-white p-4">
-          <h2 className="mb-3 text-base font-bold">Resumen de precios</h2>
+          <h2 className="mb-3 text-base font-bold text-msm-ink">Resumen de precios</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span>Subtotal</span>
@@ -229,7 +231,7 @@ export function CheckoutForm({ productId }: { productId?: string }) {
           <Link href="/terms" className="mt-3 inline-flex text-sm font-bold text-msm-blue underline">
             Leer terminos y condiciones completos
           </Link>
-          <label className="mt-4 flex items-start gap-3 text-sm font-semibold">
+          <label className="mt-4 flex items-start gap-3 text-sm font-semibold text-msm-ink">
             <input name="legalAccepted" type="checkbox" required className="mt-1 h-5 w-5" />
             Acepto las politicas legales y autorizo el registro auditable de esta aceptacion.
           </label>

@@ -109,7 +109,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         <aside className="grid h-fit gap-4">
           <article className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
             <h2 className="text-lg font-bold">Confianza del cliente</h2>
-            <div className="mt-3 grid gap-2 text-sm text-slate-600">
+            <div className="mt-3 grid gap-2 text-sm text-slate-700">
               <span>Cuenta: {customerTrust.signedIn ? "iniciada" : "datos requeridos al confirmar"}</span>
               {customerTrust.signedIn ? <span>KYC: {customerTrust.status}</span> : null}
               {customerTrust.signedIn ? <span>Riesgo: {customerTrust.risk}</span> : null}
@@ -130,7 +130,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
               </p>
             ) : null}
             {!customerTrust.signedIn ? (
-              <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm text-slate-600">
+              <p className="mt-3 rounded-md border border-blue-100 bg-blue-50 p-3 text-sm text-slate-700">
                 Puedes hacer el pedido sin iniciar sesion. Recibiras confirmacion por correo electronico.
               </p>
             ) : null}
@@ -143,11 +143,11 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
               <span>{summary?.name ?? "Combo familiar basico"}</span>
               <strong>{currency(summary?.price ?? 58)}</strong>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-slate-700">
               <span>{summary?.store ?? "Bodega VIP Santiago"}</span>
               <span>{summary ? `${summary.stock} disponibles` : "Producto seleccionado"}</span>
             </div>
-            <div className="flex justify-between text-slate-600">
+            <div className="flex justify-between text-slate-700">
               <span>Comision MSM</span>
               <span>Incluida</span>
             </div>

@@ -63,8 +63,6 @@ const nextConfig: NextConfig = {
       { source: "/marketplace", destination: "/", permanent: false },
       { source: "/marketplace/:path*", destination: "/products", permanent: false },
       { source: "/soporte", destination: "/support", permanent: false },
-      { source: "/ia", destination: "/eliana", permanent: false },
-      { source: "/asistente", destination: "/eliana", permanent: false },
       { source: "/signup", destination: "/auth/signup", permanent: false },
       { source: "/registro", destination: "/auth/signup", permanent: false },
       { source: "/crear-cuenta", destination: "/auth/signup", permanent: false },

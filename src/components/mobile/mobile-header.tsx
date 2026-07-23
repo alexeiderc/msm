@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useState } from "react";
 import { ChevronRight, Menu, Search, ShoppingCart, Store, X } from "lucide-react";
 import { CartCount } from "@/components/cart/cart-count";
-import { ElianaDiamond } from "@/components/ai/eliana-diamond";
 
 const quickLinks = [
   ["Productos", "/products"],
@@ -15,7 +14,7 @@ const quickLinks = [
   ["Ayuda", "/help"],
 ] as const;
 
-export function MobileHeader({ onElianaOpen }: { onElianaOpen: () => void }) {
+export function MobileHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -78,15 +77,6 @@ export function MobileHeader({ onElianaOpen }: { onElianaOpen: () => void }) {
           >
             <Search size={16} className="shrink-0" />
             <span className="truncate">Buscar en MSM</span>
-          </button>
-          <button
-            type="button"
-            onClick={onElianaOpen}
-            className="relative grid h-10 w-10 place-items-center rounded-md text-white transition active:bg-white/10"
-            aria-label="Abrir YO SOY ELIANA"
-          >
-            <ElianaDiamond size={27} />
-            <span className="absolute right-1 top-1 h-2 w-2 rounded-full border border-msm-midnight bg-emerald-400" />
           </button>
           <Link
             href="/cart"

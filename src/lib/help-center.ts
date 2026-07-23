@@ -10,22 +10,6 @@ export type HelpArticle = {
 
 export const helpArticles: HelpArticle[] = [
   {
-    id: "eliana-asistente",
-    category: "YO SOY ELIANA IA",
-    title: "Como usar a YO SOY ELIANA",
-    summary: "YO SOY ELIANA guia compras, remesas, comprobantes, ordenes, soporte, vendedores VIP y operaciones MSM.",
-    steps: [
-      "Entra a YO SOY ELIANA desde el menu superior.",
-      "Elige si necesitas ayuda como cliente, vendedor VIP, economia o administrador.",
-      "Escribe tu pregunta o toca una pregunta rapida.",
-      "YO SOY ELIANA puede abrir enlaces internos como /auth/signup, /products, /orders y /support.",
-      "Si YO SOY ELIANA pide una accion sensible, confirma siempre dentro del panel correspondiente.",
-      "Las cuentas exactas de pago solo deben revisarse dentro de una orden creada."
-    ],
-    href: "/eliana",
-    cta: "Abrir YO SOY ELIANA"
-  },
-  {
     id: "crear-cuenta",
     category: "Cuenta",
     title: "Como crear cuenta MSM",

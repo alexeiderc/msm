@@ -1,6 +1,5 @@
 import { LogIn, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
 import { LoginForm } from "@/components/auth/login-form";
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; error?: string }> }) {
@@ -23,7 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         </div>
         <div className="mt-5 grid grid-cols-2 gap-2 text-xs font-bold text-slate-600">
           <span className="rounded-md border border-blue-100 bg-blue-50 p-3 text-msm-blue"><ShieldCheck className="mb-1" size={16} /> Acceso seguro</span>
-          <span className="rounded-md border border-blue-100 bg-blue-50 p-3 text-msm-blue"><Sparkles className="mb-1" size={16} /> ELIANA te guia</span>
+          <span className="rounded-md border border-blue-100 bg-blue-50 p-3 text-msm-blue"><Sparkles className="mb-1" size={16} /> Compra segura</span>
         </div>
         <LoginForm next={params.next} error={params.error} />
         <p className="mt-4 text-center text-sm font-semibold text-slate-600">
@@ -32,7 +31,6 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </Link>
         </p>
       </section>
-      <ElianaFloatingAssistant />
     </main>
   );
 }

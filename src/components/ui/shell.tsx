@@ -1,30 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Bot, CircleDollarSign, Gem, Home, PackageSearch, QrCode, Search, ShoppingCart, UserRound, WalletCards, Sparkles } from "lucide-react";
-import { ElianaFloatingAssistant } from "@/components/ai/eliana-floating-assistant";
-import { LowDataModeToggle } from "@/components/performance/low-data-mode";
-import { CartCount } from "@/components/cart/cart-count";
+import { ScrollHeader } from "@/components/ui/scroll-header";
 import { MobileShell } from "@/components/ui/mobile-shell";
-import { zafiroModule } from "@/lib/zafiro-sync";
-
-const navItems = [
-  ["Inicio", "/", Home],
-  ["Productos", "/products", PackageSearch],
-  ["Remesas", "/remittances", CircleDollarSign],
-  ["Cajeros", "/atm", QrCode],
-  ["Billetera", "/wallet", WalletCards],
-  ["ZAFIRO", "/zafiro", Gem],
-  ["La Maquina", "/maquina-del-futuro", Sparkles],
-  ["YO SOY ELIANA", "/eliana", Bot]
-] as const;
 
 const exploreLinks = [
   ["Productos", "/products"],
   ["Remesas", "/remittances"],
   ["Tiendas VIP", "/tiendas-vip"],
   ["Metodos activos", "/payment-methods"],
-  ["Billetera MSM", "/wallet"],
-  ["ZAFIRO", "/zafiro"]
+  ["Billetera MSM", "/wallet"]
 ] as const;
 
 const helpLinks = [
@@ -32,8 +16,7 @@ const helpLinks = [
   ["Centro de ayuda", "/help"],
   ["Soporte", "/support"],
   ["Terminos", "/terms"],
-  ["Crear cuenta", "/auth/signup"],
-  ["YO SOY ELIANA", "/eliana"]
+  ["Crear cuenta", "/auth/signup"]
 ] as const;
 
 const panelLinks = [
@@ -41,76 +24,13 @@ const panelLinks = [
   ["VIP", "/dashboard/vip"],
   ["Admin", "/dashboard/admin"],
   ["Economia", "/dashboard/economic"],
-  ["Don Miguel", "/dashboard/don-miguel"],
-  ["La Maquina del Futuro", "/dashboard/maquina-del-futuro"]
+  ["Don Miguel", "/dashboard/don-miguel"]
 ] as const;
-
-function ZafiroSponsorBar() {
-  return (
-    <section className="border-b border-blue-300/20 bg-msm-midnight text-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-2">
-        <Link href="/zafiro" className="flex min-w-0 items-center gap-2 text-xs font-bold text-white sm:text-sm">
-          <span className="grid h-6 w-6 shrink-0 place-items-center rounded-md bg-msm-blue"><Gem size={14} /></span>
-          <span className="truncate"><span className="text-blue-200">Sponsor oficial:</span> ZAFIRO Universo Digital</span>
-        </Link>
-        <a href={zafiroModule.sponsorUrl} target="_blank" rel="noreferrer" className="shrink-0 text-xs font-bold text-msm-ice hover:text-white">
-          Conocer
-        </a>
-      </div>
-    </section>
-  );
-}
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-msm-cloud">
-      <ZafiroSponsorBar />
-      <header className="sticky top-0 z-30 hidden border-b border-slate-200/80 bg-white/92 text-msm-ink shadow-[0_8px_28px_rgba(7,17,30,0.06)] backdrop-blur md:block">
-        <div className="mx-auto max-w-7xl px-3 py-2.5 sm:px-4">
-          <div className="flex items-center gap-2.5">
-            <Link href="/" className="flex shrink-0 items-center gap-3 font-bold text-white" aria-label="MSM my store inicio">
-              <Image
-                src="/brand/msm-my-store-logo.jpeg"
-                alt="MSM my store"
-                width={160}
-                height={90}
-                priority
-                quality={65}
-                className="h-9 w-auto object-contain sm:h-10"
-              />
-            </Link>
-            <form action="/products" className="min-w-0 flex-1">
-              <label className="relative block">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
-                <input
-                  name="q"
-                  className="min-h-10 w-full rounded-md border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-msm-ink outline-none placeholder:text-slate-400 transition focus:border-msm-blue focus:bg-white focus:ring-2 focus:ring-blue-100"
-                  placeholder="Buscar producto, municipio o tienda"
-                />
-              </label>
-            </form>
-            <nav className="hidden shrink-0 items-center gap-1 md:flex">
-              {navItems.slice(1, 6).map(([label, href]) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="rounded-md px-2 py-2 text-xs font-bold text-slate-600 transition hover:bg-blue-50 hover:text-msm-blue lg:px-3 lg:text-sm"
-                >
-                  {label}
-                </Link>
-              ))}
-              <LowDataModeToggle />
-              <Link href="/cart" className="relative grid h-10 w-10 place-items-center rounded-md border border-slate-200 text-slate-600 transition hover:border-msm-blue hover:text-msm-blue" aria-label="Carrito">
-                <ShoppingCart size={18} />
-                <CartCount />
-              </Link>
-              <Link href="/auth/login" className="grid h-10 w-10 place-items-center rounded-md bg-msm-midnight text-white transition hover:bg-msm-blue" aria-label="Cuenta">
-                <UserRound size={18} />
-              </Link>
-            </nav>
-          </div>
-        </div>
-      </header>
+      <ScrollHeader />
       <main className="pb-16 md:pb-0">{children}</main>
       <footer className="border-t border-msm-line bg-white pb-20 pt-8 text-sm md:pb-8">
         <div className="mx-auto grid max-w-7xl gap-7 px-4 md:grid-cols-[1.25fr_1fr_1fr_1fr]">
@@ -160,7 +80,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </footer>
       <MobileShell />
-      <ElianaFloatingAssistant />
     </div>
   );
 }

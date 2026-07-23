@@ -20,7 +20,6 @@ Cuando esta activo:
 
 - Se elimina el fondo pesado del hero.
 - Se reducen sombras, blur y animaciones.
-- ELIANA no muestra el globo automatico repetido, pero sigue disponible con el boton.
 - La interfaz conserva navegacion, compra, remesas, ordenes y soporte.
 
 ## Imagenes

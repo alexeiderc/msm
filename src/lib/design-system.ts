@@ -21,7 +21,7 @@ export const msmDesignSystem = {
     glow: "0 14px 34px rgba(25,123,210,0.24)"
   },
   navigation: {
-    mobileBottom: ["Inicio", "Productos", "Remesas", "Cajeros", "ELIANA"],
+    mobileBottom: ["Inicio", "Productos", "Remesas", "Cajeros"],
     publicTop: ["Productos", "Remesas", "Cajeros", "Billetera"]
   }
 } as const;
