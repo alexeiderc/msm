@@ -2,68 +2,13 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import {
+  buildWaMeLink,
+  buildWhatsAppOrderMessage,
+  type WhatsAppOrderInput,
+} from "@/lib/whatsapp-order";
 
-type WhatsAppCartInput = {
-  items: {
-    productId: string;
-    name: string;
-    price: number;
-    currency: string;
-    quantity: number;
-    store: string;
-    slug: string;
-  }[];
-  totalAmount: number;
-  customerName: string;
-  customerPhone: string;
-  customerEmail?: string;
-  deliveryAddress: string;
-  deliveryProvince: string;
-  deliveryMunicipality: string;
-  beneficiaryName?: string;
-  beneficiaryPhone?: string;
-  notes?: string;
-};
-
-function buildWhatsAppMessage(input: WhatsAppCartInput, adminLink: string) {
-  const itemLines = input.items
-    .map((item) => `• ${item.name} x${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
-    .join("\n");
-
-  return [
-    `🛒 *Nuevo pedido desde MSM MY STORE*`,
-    ``,
-    `*Cliente:* ${input.customerName}`,
-    `*Teléfono:* ${input.customerPhone}`,
-    input.customerEmail ? `*Email:* ${input.customerEmail}` : null,
-    `*Dirección:* ${input.deliveryAddress}`,
-    `*Provincia:* ${input.deliveryProvince}`,
-    `*Municipio:* ${input.deliveryMunicipality}`,
-    input.beneficiaryName ? `*Beneficiario:* ${input.beneficiaryName}` : null,
-    input.beneficiaryPhone ? `*Tel. beneficiario:* ${input.beneficiaryPhone}` : null,
-    input.notes ? `*Notas:* ${input.notes}` : null,
-    ``,
-    `*Productos:*`,
-    itemLines,
-    ``,
-    `*Total:* $${input.totalAmount.toFixed(2)} USD`,
-    ``,
-    `*Link de seguimiento:*`,
-    adminLink,
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
-function buildWaMeLink(phone: string, message: string) {
-  let digits = phone.replace(/\D/g, "");
-  if (digits.startsWith("0")) digits = digits.slice(1);
-  if (digits.length === 8) digits = `53${digits}`;
-  if (digits.length === 10 && digits.startsWith("5")) digits = `53${digits}`;
-
-  const encoded = encodeURIComponent(message);
-  return `https://wa.me/${digits}?text=${encoded}`;
-}
+export type WhatsAppCartInput = WhatsAppOrderInput;
 
 export async function sendWhatsAppCart(input: WhatsAppCartInput) {
   // Login is optional for the demo flow
@@ -99,7 +44,7 @@ export async function sendWhatsAppCart(input: WhatsAppCartInput) {
   const cartId = crypto.randomUUID();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const adminLink = `${siteUrl}/dashboard/whatsapp-carts/${cartId}`;
-  const messageBody = buildWhatsAppMessage(input, adminLink);
+  const messageBody = buildWhatsAppOrderMessage(input, adminLink);
   const waMeLink = buildWaMeLink(defaultWhatsApp, messageBody);
 
   const { error: insertError } = await admin.from("whatsapp_carts").insert({
