@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShoppingBag, Trash2, Minus, Plus, CheckCircle, Loader2 } from "lucide-react";
+import { ShoppingBag, Trash2, Minus, Plus, CheckCircle, Loader2, MessageCircle } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { getCart, removeFromCart, updateQuantity, clearCart, type CartItem } from "@/lib/cart-store";
 import { cubaProvinces, getMunicipalitiesForProvince } from "@/lib/cuba-locations";
@@ -14,7 +14,7 @@ export default function CartPage() {
   const [loaded, setLoaded] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [sending, setSending] = useState(false);
-  const [result, setResult] = useState<{ cartId: string; adminLink: string } | null>(null);
+  const [result, setResult] = useState<{ cartId: string; adminLink: string; waMeLink?: string } | null>(null);
   const [error, setError] = useState("");
 
   const [customerName, setCustomerName] = useState("");
@@ -73,6 +73,11 @@ export default function CartPage() {
 
       setResult(result);
       clearCart();
+
+      // Open WhatsApp with pre-filled message
+      if (result.waMeLink) {
+        window.open(result.waMeLink, "_blank");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Error al enviar el carrito");
     } finally {
@@ -87,16 +92,28 @@ export default function CartPage() {
       <AppShell>
         <section className="mx-auto max-w-2xl px-4 py-12 pb-24 text-center">
           <CheckCircle className="mx-auto text-green-500" size={64} />
-          <h1 className="mt-4 text-3xl font-bold">Pedido enviado por WhatsApp</h1>
+          <h1 className="mt-4 text-3xl font-bold">Pedido listo para WhatsApp</h1>
           <p className="mt-3 text-lg text-slate-700">
-            Hemos recibido tu pedido y lo hemos enviado a nuestro equipo para procesarlo.
+            Hemos guardado tu pedido y abierto WhatsApp con el mensaje preparado.
+            Solo tienes que pulsar <strong>Enviar</strong> en WhatsApp.
           </p>
-          <div className="mt-6 rounded-lg border border-msm-line bg-white p-6 shadow-soft">
-            <p className="text-sm text-slate-700">Usa este enlace para dar seguimiento a tu pedido:</p>
-            <a
-              href={result.adminLink}
-              className="mt-2 inline-block break-all text-msm-blue underline"
-            >
+          <div className="mt-6 rounded-lg border border-msm-line bg-white p-6 shadow-soft text-left">
+            {result.waMeLink ? (
+              <>
+                <p className="text-sm text-slate-600">Si WhatsApp no se abrió automáticamente:</p>
+                <a
+                  href={result.waMeLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md bg-green-600 px-5 text-sm font-bold text-white hover:bg-green-700"
+                >
+                  <MessageCircle size={18} />
+                  Abrir WhatsApp ahora
+                </a>
+              </>
+            ) : null}
+            <p className="mt-5 text-sm text-slate-600">Link de seguimiento del pedido:</p>
+            <a href={result.adminLink} className="mt-1 block break-all text-sm text-msm-blue underline">
               {result.adminLink}
             </a>
           </div>
@@ -163,14 +180,20 @@ export default function CartPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <button
-                        onClick={() => { updateQuantity(item.productId, item.quantity - 1); refresh(); }}
+                        onClick={() => {
+                          updateQuantity(item.productId, item.quantity - 1);
+                          refresh();
+                        }}
                         className="grid h-8 w-8 place-items-center rounded border text-slate-700 hover:bg-slate-100"
                       >
                         <Minus size={14} />
                       </button>
                       <span className="min-w-[2rem] text-center font-bold">{item.quantity}</span>
                       <button
-                        onClick={() => { updateQuantity(item.productId, item.quantity + 1); refresh(); }}
+                        onClick={() => {
+                          updateQuantity(item.productId, item.quantity + 1);
+                          refresh();
+                        }}
                         className="grid h-8 w-8 place-items-center rounded border text-slate-700 hover:bg-slate-100"
                       >
                         <Plus size={14} />
@@ -180,7 +203,10 @@ export default function CartPage() {
                       {(item.price * item.quantity).toFixed(2)} {item.currency}
                     </p>
                     <button
-                      onClick={() => { removeFromCart(item.productId); refresh(); }}
+                      onClick={() => {
+                        removeFromCart(item.productId);
+                        refresh();
+                      }}
                       className="grid h-8 w-8 place-items-center rounded text-red-500 hover:bg-red-50"
                     >
                       <Trash2 size={15} />
@@ -197,15 +223,19 @@ export default function CartPage() {
               </div>
               <div className="flex flex-wrap gap-3">
                 <button
-                  onClick={() => { clearCart(); refresh(); }}
+                  onClick={() => {
+                    clearCart();
+                    refresh();
+                  }}
                   className="rounded-md border border-msm-line px-4 py-2 text-sm font-semibold text-slate-700"
                 >
                   Vaciar carrito
                 </button>
                 <button
                   onClick={() => setShowForm(true)}
-                  className="inline-flex min-h-11 items-center justify-center rounded-md bg-msm-blue px-6 text-sm font-bold text-white"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-green-600 px-6 text-sm font-bold text-white hover:bg-green-700"
                 >
+                  <MessageCircle size={17} />
                   Enviar pedido por WhatsApp
                 </button>
               </div>
@@ -215,7 +245,7 @@ export default function CartPage() {
               <form onSubmit={handleSubmit} className="mt-6 rounded-lg border border-msm-line bg-white p-6 shadow-soft">
                 <h2 className="text-xl font-bold">Datos del pedido</h2>
                 <p className="mt-1 text-sm text-slate-700">
-                  Completa tus datos para enviar el pedido a nuestro equipo por WhatsApp
+                  Completa tus datos. No necesitas crear cuenta. Al enviar se abrirá WhatsApp con el pedido listo.
                 </p>
 
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -263,12 +293,17 @@ export default function CartPage() {
                     <select
                       required
                       value={deliveryProvince}
-                      onChange={(e) => { setDeliveryProvince(e.target.value); setDeliveryMunicipality(""); }}
+                      onChange={(e) => {
+                        setDeliveryProvince(e.target.value);
+                        setDeliveryMunicipality("");
+                      }}
                       className="mt-1 w-full rounded-md border border-msm-line px-3 py-2 text-sm"
                     >
                       <option value="">Seleccionar provincia</option>
                       {cubaProvinces.map((p) => (
-                        <option key={p} value={p}>{p}</option>
+                        <option key={p} value={p}>
+                          {p}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -283,7 +318,9 @@ export default function CartPage() {
                     >
                       <option value="">Seleccionar municipio</option>
                       {municipalities.map((m) => (
-                        <option key={m} value={m}>{m}</option>
+                        <option key={m} value={m}>
+                          {m}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -319,9 +356,7 @@ export default function CartPage() {
                 </div>
 
                 {error && (
-                  <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                    {error}
-                  </div>
+                  <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>
                 )}
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -330,8 +365,8 @@ export default function CartPage() {
                     disabled={sending}
                     className="inline-flex min-h-11 items-center gap-2 rounded-md bg-green-600 px-6 text-sm font-bold text-white hover:bg-green-700 disabled:opacity-50"
                   >
-                    {sending ? <Loader2 className="animate-spin" size={18} /> : null}
-                    {sending ? "Enviando..." : "Enviar pedido por WhatsApp"}
+                    {sending ? <Loader2 className="animate-spin" size={18} /> : <MessageCircle size={18} />}
+                    {sending ? "Preparando..." : "Enviar pedido por WhatsApp"}
                   </button>
                   <button
                     type="button"
