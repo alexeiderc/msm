@@ -2,7 +2,6 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { queueWhatsAppMessage } from "@/lib/whatsapp";
 
 type WhatsAppCartInput = {
   items: {
@@ -23,12 +22,61 @@ type WhatsAppCartInput = {
   deliveryMunicipality: string;
   beneficiaryName?: string;
   beneficiaryPhone?: string;
+  notes?: string;
 };
 
+function buildWhatsAppMessage(input: WhatsAppCartInput, adminLink: string) {
+  const itemLines = input.items
+    .map((item) => `• ${item.name} x${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
+    .join("\n");
+
+  return [
+    `🛒 *Nuevo pedido desde MSM MY STORE*`,
+    ``,
+    `*Cliente:* ${input.customerName}`,
+    `*Teléfono:* ${input.customerPhone}`,
+    input.customerEmail ? `*Email:* ${input.customerEmail}` : null,
+    `*Dirección:* ${input.deliveryAddress}`,
+    `*Provincia:* ${input.deliveryProvince}`,
+    `*Municipio:* ${input.deliveryMunicipality}`,
+    input.beneficiaryName ? `*Beneficiario:* ${input.beneficiaryName}` : null,
+    input.beneficiaryPhone ? `*Tel. beneficiario:* ${input.beneficiaryPhone}` : null,
+    input.notes ? `*Notas:* ${input.notes}` : null,
+    ``,
+    `*Productos:*`,
+    itemLines,
+    ``,
+    `*Total:* $${input.totalAmount.toFixed(2)} USD`,
+    ``,
+    `*Link de seguimiento:*`,
+    adminLink,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildWaMeLink(phone: string, message: string) {
+  let digits = phone.replace(/\D/g, "");
+  if (digits.startsWith("0")) digits = digits.slice(1);
+  if (digits.length === 8) digits = `53${digits}`;
+  if (digits.length === 10 && digits.startsWith("5")) digits = `53${digits}`;
+
+  const encoded = encodeURIComponent(message);
+  return `https://wa.me/${digits}?text=${encoded}`;
+}
+
 export async function sendWhatsAppCart(input: WhatsAppCartInput) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Debes iniciar sesión para enviar el carrito");
+  // Login is optional for the demo flow
+  let userId: string | null = null;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    userId = user?.id ?? null;
+  } catch {
+    userId = null;
+  }
 
   const admin = createAdminClient();
 
@@ -43,43 +91,20 @@ export async function sendWhatsAppCart(input: WhatsAppCartInput) {
     : "";
 
   if (!defaultWhatsApp) {
-    throw new Error("El administrador aún no ha configurado el número de WhatsApp para recibir pedidos");
+    throw new Error(
+      "El administrador aún no ha configurado el número de WhatsApp para recibir pedidos"
+    );
   }
 
   const cartId = crypto.randomUUID();
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
   const adminLink = `${siteUrl}/dashboard/whatsapp-carts/${cartId}`;
-
-  const itemLines = input.items
-    .map((item) => `• ${item.name} x${item.quantity} = $${(item.price * item.quantity).toFixed(2)}`)
-    .join("\n");
-
-  const messageBody = [
-    `🛒 *Nuevo pedido desde MSM my store*`,
-    ``,
-    `*Cliente:* ${input.customerName}`,
-    `*Teléfono:* ${input.customerPhone}`,
-    input.customerEmail ? `*Email:* ${input.customerEmail}` : null,
-    `*Dirección:* ${input.deliveryAddress}`,
-    `*Provincia:* ${input.deliveryProvince}`,
-    `*Municipio:* ${input.deliveryMunicipality}`,
-    input.beneficiaryName ? `*Beneficiario:* ${input.beneficiaryName}` : null,
-    input.beneficiaryPhone ? `*Tel. beneficiario:* ${input.beneficiaryPhone}` : null,
-    ``,
-    `*Productos:*`,
-    itemLines,
-    ``,
-    `*Total:* $${input.totalAmount.toFixed(2)} USD`,
-    ``,
-    `*Link de seguimiento:*`,
-    adminLink,
-  ]
-    .filter(Boolean)
-    .join("\n");
+  const messageBody = buildWhatsAppMessage(input, adminLink);
+  const waMeLink = buildWaMeLink(defaultWhatsApp, messageBody);
 
   const { error: insertError } = await admin.from("whatsapp_carts").insert({
     id: cartId,
-    user_id: user.id,
+    user_id: userId,
     items: input.items,
     customer_name: input.customerName,
     customer_phone: input.customerPhone,
@@ -96,34 +121,16 @@ export async function sendWhatsAppCart(input: WhatsAppCartInput) {
     admin_notes: messageBody,
   });
 
-  if (insertError) throw new Error("Error al guardar el carrito: " + insertError.message);
-
-  try {
-    const msgResult = await queueWhatsAppMessage({
-      to: defaultWhatsApp,
-      template: "cart_received",
-      variables: {
-        customerName: input.customerName,
-        customerPhone: input.customerPhone,
-        total: `$${input.totalAmount.toFixed(2)}`,
-        link: adminLink,
-      },
-    });
-
-    if (!msgResult.queued) {
-      await admin
-        .from("whatsapp_carts")
-        .update({ admin_notes: `WhatsApp queue: ${msgResult.reason}` })
-        .eq("id", cartId);
-    }
-  } catch {
-    await admin
-      .from("whatsapp_carts")
-      .update({ admin_notes: "WhatsApp send failed, message queued for retry" })
-      .eq("id", cartId);
+  if (insertError) {
+    throw new Error("Error al guardar el carrito: " + insertError.message);
   }
 
-  return { cartId, adminLink };
+  return {
+    cartId,
+    adminLink,
+    waMeLink,
+    messageBody,
+  };
 }
 
 export async function updateWhatsAppCartStatus(
@@ -136,7 +143,9 @@ export async function updateWhatsAppCartStatus(
   }
 ) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) throw new Error("No autorizado");
 
   const admin = createAdminClient();
@@ -147,10 +156,7 @@ export async function updateWhatsAppCartStatus(
   if (data.feeAmount !== undefined) updateData.fee_amount = data.feeAmount;
   if (data.adminNotes !== undefined) updateData.admin_notes = data.adminNotes;
 
-  const { error } = await admin
-    .from("whatsapp_carts")
-    .update(updateData)
-    .eq("id", cartId);
+  const { error } = await admin.from("whatsapp_carts").update(updateData).eq("id", cartId);
 
   if (error) throw new Error("Error al actualizar: " + error.message);
 
@@ -177,7 +183,9 @@ export async function getWhatsAppCart(cartId: string) {
 
 export async function getUserWhatsAppCarts() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return [];
 
   const admin = createAdminClient();
@@ -204,20 +212,23 @@ export async function getAllWhatsAppCarts() {
 
 export async function saveWhatsAppNumber(number: string) {
   const supabase = await createClient();
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
   if (authError || !user) return { success: false, message: "No autorizado" };
 
   const admin = createAdminClient();
 
-  // Primero intentar actualizar, si no existe hacer insert
-  const { error: upsertError } = await admin
-    .from("settings")
-    .upsert({
+  const { error: upsertError } = await admin.from("settings").upsert(
+    {
       key: "whatsapp_number",
       value: { number },
       description: "Número de WhatsApp para recibir pedidos del carrito",
       updated_by: user.id,
-    }, { onConflict: "key" });
+    },
+    { onConflict: "key" }
+  );
 
   if (upsertError) {
     console.error("Upsert error:", upsertError);
