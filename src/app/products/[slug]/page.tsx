@@ -70,27 +70,29 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       availability?: string | null;
       product_images?: { url?: string } | { url?: string }[];
       categories?: { name?: string } | { name?: string }[];
-      stores?: {
-        name?: string;
-        slug?: string;
-        status?: string;
-        is_active?: boolean;
-        seller_id?: string | null;
-        country?: string | null;
-        province?: string | null;
-        municipality?: string | null;
-        delivery_zones?: string[];
-      } | {
-        name?: string;
-        slug?: string;
-        status?: string;
-        is_active?: boolean;
-        seller_id?: string | null;
-        country?: string | null;
-        province?: string | null;
-        municipality?: string | null;
-        delivery_zones?: string[];
-      }[];
+      stores?:
+        | {
+            name?: string;
+            slug?: string;
+            status?: string;
+            is_active?: boolean;
+            seller_id?: string | null;
+            country?: string | null;
+            province?: string | null;
+            municipality?: string | null;
+            delivery_zones?: string[];
+          }
+        | {
+            name?: string;
+            slug?: string;
+            status?: string;
+            is_active?: boolean;
+            seller_id?: string | null;
+            country?: string | null;
+            province?: string | null;
+            municipality?: string | null;
+            delivery_zones?: string[];
+          }[];
     };
 
     const store = Array.isArray(row.stores) ? row.stores[0] : row.stores;
@@ -124,7 +126,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
       promisedSla: row.promised_sla ?? undefined,
       availability: row.availability ?? undefined,
       image: images[0] ?? "/brand/msm-my-store-logo.jpeg",
-      gallery: images.length ? images : ["/brand/msm-my-store-logo.jpeg"]
+      gallery: images.length ? images : ["/brand/msm-my-store-logo.jpeg"],
     };
   } catch {
     const fallback = findFallbackProduct(slug);
@@ -133,7 +135,7 @@ async function getProduct(slug: string): Promise<DetailProduct | null> {
           ...fallback,
           description:
             "Producto publicado dentro de MSM my store con tienda responsable, zona de entrega, pago organizado y seguimiento auditable.",
-          gallery: [fallback.image]
+          gallery: [fallback.image],
         }
       : null;
   }
@@ -151,7 +153,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
             <ArrowLeft size={16} /> Volver a productos
           </Link>
           <h1 className="mt-4 text-3xl font-bold">Producto no disponible</h1>
-          <p className="mt-2 text-slate-600">Este producto no esta activo, fue pausado o no tiene tienda y zona publicables.</p>
+          <p className="mt-2 text-slate-600">
+            Este producto no esta activo, fue pausado o no tiene tienda y zona publicables.
+          </p>
         </section>
       </AppShell>
     );
@@ -160,7 +164,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const checkoutHref = isDatabaseId(product.id) ? `/checkout?product=${product.id}` : "/checkout";
   const country = product.country ?? "Cuba";
 
-  // Build WhatsApp purchase link with product data as query params
   const whatsappParams = new URLSearchParams({
     product: product.id,
     name: product.name,
@@ -170,6 +173,9 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
     slug: product.slug,
   });
   const comprarWhatsAppHref = `/comprar-whatsapp?${whatsappParams.toString()}`;
+
+  // Cart works for real DB products and demo/fallback products
+  const canAddToCart = true;
 
   return (
     <AppShell>
@@ -212,7 +218,6 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </div>
               <div className="mt-7 flex flex-wrap gap-3">
-                {/* Primary CTA for demo: WhatsApp */}
                 <Link
                   href={comprarWhatsAppHref}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-green-600 px-5 text-sm font-bold text-white shadow-glow transition hover:bg-green-700"
@@ -220,7 +225,7 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                   <MessageCircle size={17} /> Comprar por WhatsApp
                 </Link>
 
-                {isDatabaseId(product.id) && product.sellerId ? (
+                {canAddToCart ? (
                   <AddToCartButton
                     productId={product.id}
                     name={product.name}
@@ -229,8 +234,8 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     image={product.image}
                     store={product.store}
                     storeId={product.storeId ?? product.id}
-                    sellerId={product.sellerId}
-                    stock={product.stock}
+                    sellerId={product.sellerId ?? "demo"}
+                    stock={product.stock > 0 ? product.stock : 20}
                     slug={product.slug}
                   />
                 ) : null}
@@ -260,17 +265,23 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
         <article className="rounded-lg border border-msm-line bg-white p-5 shadow-soft">
           <ShieldCheck className="text-msm-blue" size={24} />
           <h2 className="mt-3 font-bold">Garantia y responsabilidad</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{product.warranty ?? "Garantia segun tienda VIP y evidencia de entrega."}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {product.warranty ?? "Garantia segun tienda VIP y evidencia de entrega."}
+          </p>
         </article>
         <article className="rounded-lg border border-msm-line bg-white p-5 shadow-soft">
           <BadgeCheck className="text-msm-blue" size={24} />
           <h2 className="mt-3 font-bold">Disponibilidad</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{product.availability ?? "Stock real o por confirmar por el VIP."}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {product.availability ?? "Stock real o por confirmar por el VIP."}
+          </p>
         </article>
         <article className="rounded-lg border border-msm-line bg-white p-5 shadow-soft">
           <MapPin className="text-msm-blue" size={24} />
           <h2 className="mt-3 font-bold">Zona de entrega</h2>
-          <p className="mt-2 text-sm leading-6 text-slate-600">{product.deliveryZone ?? `${product.municipality}, ${product.province}, ${country}`}</p>
+          <p className="mt-2 text-sm leading-6 text-slate-600">
+            {product.deliveryZone ?? `${product.municipality}, ${product.province}, ${country}`}
+          </p>
         </article>
       </section>
     </AppShell>
