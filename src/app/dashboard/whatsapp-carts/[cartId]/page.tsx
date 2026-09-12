@@ -20,7 +20,7 @@ export default async function WhatsAppCartDetailPage({ params }: { params: Promi
 
   const row = cart as unknown as {
     id: string;
-    items: Array<{ name: string; price: number; quantity: number; currency: string; store: string }>;
+    items?: Array<{ name: string; price: number; quantity: number; currency: string; store: string }> | null;
     customer_name?: string;
     customer_phone?: string;
     customer_email?: string;
@@ -29,19 +29,21 @@ export default async function WhatsAppCartDetailPage({ params }: { params: Promi
     delivery_municipality?: string;
     beneficiary_name?: string;
     beneficiary_phone?: string;
-    total_amount: number;
+    total_amount: number | string;
     whatsapp_number: string;
     status: string;
     tracking_code?: string;
-    fee_amount?: number;
+    fee_amount?: number | string | null;
     admin_notes?: string;
     sent_at: string;
   };
 
+  const items = Array.isArray(row.items) ? row.items : [];
   const status = statusConfig[row.status] ?? statusConfig.enviado;
   const StatusIcon = status.icon;
-  const itemTotal = row.items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const finalTotal = row.fee_amount ? itemTotal + Number(row.fee_amount) : itemTotal;
+  const itemTotal = items.reduce((sum, i) => sum + Number(i.price) * Number(i.quantity), 0);
+  const fee = row.fee_amount != null ? Number(row.fee_amount) : 0;
+  const finalTotal = fee ? itemTotal + fee : Number(row.total_amount) || itemTotal;
 
   return (
     <section className="mx-auto max-w-3xl px-4 py-8 pb-24">
@@ -64,9 +66,6 @@ export default async function WhatsAppCartDetailPage({ params }: { params: Promi
                 <span className="font-semibold">Código de rastreo:</span> {row.tracking_code}
               </p>
             )}
-            {row.admin_notes && (
-              <p className="mt-2 text-sm text-slate-600">{row.admin_notes}</p>
-            )}
           </div>
 
           <div className="rounded-lg border border-msm-line bg-white p-4 shadow-soft">
@@ -76,10 +75,10 @@ export default async function WhatsAppCartDetailPage({ params }: { params: Promi
                 <span className="text-slate-600">Subtotal</span>
                 <span className="font-bold">${itemTotal.toFixed(2)} USD</span>
               </div>
-              {row.fee_amount ? (
+              {fee ? (
                 <div className="flex justify-between">
                   <span className="text-slate-600">Fee</span>
-                  <span className="font-bold">${Number(row.fee_amount).toFixed(2)} USD</span>
+                  <span className="font-bold">${fee.toFixed(2)} USD</span>
                 </div>
               ) : null}
               <div className="flex justify-between border-t border-msm-line pt-2 text-base">
@@ -116,25 +115,35 @@ export default async function WhatsAppCartDetailPage({ params }: { params: Promi
 
         <div className="mt-6 rounded-lg border border-msm-line bg-white shadow-soft">
           <div className="border-b border-msm-line bg-slate-50 px-4 py-3">
-            <h2 className="font-bold">Productos ({row.items.length})</h2>
+            <h2 className="font-bold">Productos ({items.length})</h2>
           </div>
-          {row.items.map((item, i) => (
-            <div key={i} className="flex items-center justify-between border-b border-msm-line px-4 py-3 last:border-0">
-              <div>
-                <p className="font-bold">{item.name}</p>
-                <p className="text-xs text-slate-500">{item.store} &middot; x{item.quantity}</p>
+          {items.length === 0 ? (
+            <p className="p-4 text-sm text-slate-500">Sin productos</p>
+          ) : (
+            items.map((item, i) => (
+              <div key={i} className="flex items-center justify-between border-b border-msm-line px-4 py-3 last:border-0">
+                <div>
+                  <p className="font-bold">{item.name}</p>
+                  <p className="text-xs text-slate-500">{item.store} &middot; x{item.quantity}</p>
+                </div>
+                <p className="font-bold">${(Number(item.price) * Number(item.quantity)).toFixed(2)} {item.currency || "USD"}</p>
               </div>
-              <p className="font-bold">${(item.price * item.quantity).toFixed(2)} {item.currency}</p>
-            </div>
-          ))}
+            ))
+          )}
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex flex-wrap gap-3">
+          <Link
+            href="/dashboard/admin/whatsapp-carts"
+            className="inline-flex min-h-11 items-center gap-2 rounded-md border border-msm-line px-5 text-sm font-bold"
+          >
+            Volver al listado
+          </Link>
           <Link
             href="/products"
             className="inline-flex min-h-11 items-center gap-2 rounded-md bg-msm-blue px-5 text-sm font-bold text-white"
           >
-            Seguir comprando
+            Catálogo
           </Link>
         </div>
       </section>
