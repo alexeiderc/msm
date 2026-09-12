@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowLeft, BadgeCheck, Clock, MapPin, ShieldCheck, ShoppingCart, Store } from "lucide-react";
+import { ArrowLeft, BadgeCheck, Clock, MapPin, MessageCircle, ShieldCheck, ShoppingCart, Store } from "lucide-react";
 import { AppShell } from "@/components/ui/shell";
 import { Badge } from "@/components/ui/badge";
 import { AddToCartButton } from "@/components/cart/add-to-cart";
@@ -160,6 +160,17 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
   const checkoutHref = isDatabaseId(product.id) ? `/checkout?product=${product.id}` : "/checkout";
   const country = product.country ?? "Cuba";
 
+  // Build WhatsApp purchase link with product data as query params
+  const whatsappParams = new URLSearchParams({
+    product: product.id,
+    name: product.name,
+    price: String(product.price),
+    currency: product.currency ?? "USD",
+    store: product.store,
+    slug: product.slug,
+  });
+  const comprarWhatsAppHref = `/comprar-whatsapp?${whatsappParams.toString()}`;
+
   return (
     <AppShell>
       <section className="border-b border-white/10 bg-msm-midnight text-white">
@@ -201,6 +212,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                 </span>
               </div>
               <div className="mt-7 flex flex-wrap gap-3">
+                {/* Primary CTA for demo: WhatsApp */}
+                <Link
+                  href={comprarWhatsAppHref}
+                  className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-green-600 px-5 text-sm font-bold text-white shadow-glow transition hover:bg-green-700"
+                >
+                  <MessageCircle size={17} /> Comprar por WhatsApp
+                </Link>
+
                 {isDatabaseId(product.id) && product.sellerId ? (
                   <AddToCartButton
                     productId={product.id}
@@ -215,12 +234,14 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
                     slug={product.slug}
                   />
                 ) : null}
+
                 <Link
                   href={checkoutHref}
                   className="inline-flex min-h-12 items-center justify-center gap-2 rounded-md bg-msm-blue px-5 text-sm font-bold text-white shadow-glow transition hover:bg-msm-electric"
                 >
                   <ShoppingCart size={17} /> Comprar ahora
                 </Link>
+
                 {product.storeSlug ? (
                   <Link
                     href={`/vendedores/${product.storeSlug}`}
